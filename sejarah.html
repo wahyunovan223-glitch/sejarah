@@ -1,0 +1,3554 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartExam – Online Examination System | SAS Sejarah Kelas XII</title>
+
+  <!-- Typography: Inter & Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js for Score Breakdown & Progression Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+            },
+            accent: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, .font-display {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeSlideIn 0.25s ease-out forwards;
+    }
+
+    @keyframes pulseUrgent {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.35);
+      }
+      50% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+      }
+    }
+
+    .timer-urgent {
+      animation: pulseUrgent 1.6s infinite;
+    }
+
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Brand Logo -->
+        <button id="brandLogoBtn" class="flex items-center gap-3 text-left focus:outline-none group cursor-pointer" type="button">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-blue-700 to-violet-600 flex items-center justify-center text-white shadow-md shadow-blue-600/20 group-hover:scale-105 transition-transform">
+            <i data-lucide="landmark" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-display font-bold text-lg tracking-tight text-slate-900">SmartExam</span>
+              <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-violet-100 text-violet-700">
+                OES v2.6
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-500 leading-none hidden sm:block">Online Examination System • SMA Kemala Bhayangkari 1 Surabaya</p>
+          </div>
+        </button>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center gap-1.5" aria-label="Navigasi Utama">
+          <button data-nav="home" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 cursor-pointer" type="button">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>Beranda</span>
+          </button>
+          <button data-nav="exam" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 cursor-pointer" type="button">
+            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+            <span>Ujian</span>
+          </button>
+          <button data-nav="history" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 cursor-pointer" type="button">
+            <i data-lucide="history" class="w-4 h-4"></i>
+            <span>Riwayat</span>
+          </button>
+          <button data-nav="admin" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 cursor-pointer" type="button">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>Admin</span>
+          </button>
+        </nav>
+
+        <!-- Active Exam Mini Status / Mobile Menu Trigger -->
+        <div class="flex items-center gap-2">
+          <div id="headerTimerBadge" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+            <i data-lucide="timer" class="w-4 h-4"></i>
+            <span id="headerTimerText">90:00</span>
+          </div>
+
+          <button id="mobileMenuBtn" class="md:hidden p-2.5 rounded-xl text-slate-600 hover:bg-slate-100 focus:outline-none cursor-pointer" aria-label="Buka Menu" type="button">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Drawer -->
+      <div id="mobileNavDrawer" class="hidden md:hidden pb-3 pt-1 border-t border-slate-100">
+        <div class="grid grid-cols-2 gap-2 pt-2">
+          <button data-nav="home" class="mobile-nav-btn px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 text-left cursor-pointer" type="button">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>Beranda</span>
+          </button>
+          <button data-nav="exam" class="mobile-nav-btn px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 text-left cursor-pointer" type="button">
+            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+            <span>Ujian</span>
+          </button>
+          <button data-nav="history" class="mobile-nav-btn px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 text-left cursor-pointer" type="button">
+            <i data-lucide="history" class="w-4 h-4"></i>
+            <span>Riwayat</span>
+          </button>
+          <button data-nav="admin" class="mobile-nav-btn px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 text-left cursor-pointer" type="button">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>Admin</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification Banner (No alert()) -->
+  <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Main Content Container -->
+  <main id="appContainer" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <!-- Dynamic Views Rendered Here -->
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-slate-700">SmartExam – Online Examination System</span>
+        <span>•</span>
+        <span>SAS Sejarah / IPS (Wajib) Kelas XII Gasal (SMA Kemala Bhayangkari 1 Surabaya)</span>
+      </div>
+      <div>30 Butir Soal Terverifikasi • 6 Bentuk Soal (5 per Bentuk)</div>
+    </div>
+  </footer>
+
+  <!-- Custom Confirmation / Guard Modal -->
+  <div id="modalBackdrop" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4">
+    <div id="modalCard" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-fade-in">
+      <div class="flex items-start gap-3.5">
+        <div id="modalIconWrap" class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        </div>
+        <div class="flex-1">
+          <h3 id="modalTitle" class="font-display font-bold text-lg text-slate-900">Konfirmasi Tindakan</h3>
+          <p id="modalMessage" class="text-sm text-slate-600 mt-1 leading-relaxed"></p>
+        </div>
+      </div>
+      <div class="mt-6 flex items-center justify-end gap-2.5">
+        <button id="modalCancelBtn" class="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer" type="button">
+          Batal
+        </button>
+        <button id="modalConfirmBtn" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm cursor-pointer" type="button">
+          Ya, Lanjutkan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. DEFAULT DATASET: ALL 30 QUESTIONS FROM SOAL_SAS_SEJARAH_WAJIB_KELAS_12.DOCX
+    // =========================================================================
+    const MATCHING_OPTIONS_16_20 = [
+      {
+        key: 'A',
+        text: 'Komando/strategi bumi hangus oleh pimpinan TRI (seperti A.H. Nasution) serta keberanian pejuang milisi/rakyat (seperti Mohammad Toha) mencegah kota dipakai musuh'
+      },
+      {
+        key: 'B',
+        text: 'Sentralisasi kekuasaan eksekutif, doktrin Manipol-USDEK sebagai haluan negara, serta pengawasan ketat terhadap partai politik dan lembaga perwakilan'
+      },
+      {
+        key: 'C',
+        text: 'Ekonomi terpimpin yang menekankan prinsip berdikari, peran negara dalam sektor strategis, serta upaya mengatasi hiperinflasi dan kelangkaan barang kebutuhan'
+      },
+      {
+        key: 'D',
+        text: 'S.M. Kartosoewirjo (Jawa Barat), Kahar Muzakkar (Sulawesi Selatan), dan Daud Beureueh (Aceh)'
+      },
+      {
+        key: 'E',
+        text: 'Pemotongan nilai uang (Gunting Syafruddin), perlindungan pengusaha pribumi (Gerakan Benteng), dan perundingan pembatalan ikatan ekonomi merugikan (Finek)'
+      },
+      {
+        key: 'F',
+        text: 'Kebijakan liberalisasi penuh tanpa peran bank sentral atau anggaran negara'
+      },
+      {
+        key: 'G',
+        text: 'Pemberontakan yang dipimpin oleh Westerling di Bandung saja'
+      },
+      {
+        key: 'H',
+        text: 'Pembentukan parlemen federal baru di bawah kendali Belanda pada 1963'
+      }
+    ];
+
+    const DEFAULT_EXAM_CONFIG = {
+      title: 'SAS Sejarah / IPS (Wajib) Kelas XII Gasal – SMA Kemala Bhayangkari 1 Surabaya',
+      school: 'SMA Kemala Bhayangkari 1 Surabaya',
+      academicYear: 'Tahun Pelajaran 2026/2027',
+      semester: 'Kelas XII / Gasal',
+      description:
+        'Naskah Soal Penilaian Sumatif Akhir Semester (SAS) Mata Pelajaran Sejarah / IPS (Wajib) Kelas XII Gasal (Alokasi Waktu 90 Menit, Jumlah Soal 30 Butir Soal) mencakup Revolusi Kemerdekaan Indonesia (1945–1950), diplomasi & agresi militer, Demokrasi Liberal (1950–1959), Pemilu 1955 & kebijakan ekonomi, Demokrasi Terpimpin (1959–1965), NASAKOM, hingga dinamika 1965–1966 (G30S/PKI, TRITURA, dan SUPERSEMAR).',
+      durationMinutes: 90,
+      passingGrade: 75,
+      categories: [
+        'Revolusi Kemerdekaan & Diplomasi (1945–1950)',
+        'Demokrasi Liberal, Pemilu 1955 & Ekonomi',
+        'Demokrasi Terpimpin & NASAKOM (1959–1965)',
+        'Dinamika Politik 1965–1966 (TRITURA & SUPERSEMAR)'
+      ],
+      instructions: [
+        'Ujian terdiri dari 30 butir soal (6 bagian, masing-masing 5 butir soal) dengan alokasi waktu standar 90 menit (Anda juga dapat memilih 30, 60, 90, atau 120 menit sebelum memulai).',
+        'Soal ditampilkan satu per satu dengan navigasi Sebelumnya/Selanjutnya serta indikator nomor soal yang sudah atau belum dijawab tanpa kehilangan jawaban maupun mereset timer.',
+        'Timer berjalan berkelanjutan selama ujian berlangsung. Peringatan muncul ketika sisa waktu 5 menit, dan ujian otomatis diselesaikan serta dikoreksi apabila waktu habis.',
+        'Pilih/isi jawaban lalu tekan tombol "Jawab" untuk langsung melihat status benar/salah, kunci jawaban, pembahasan lengkap, serta tombol "Soal Berikutnya". Penjelasan tidak muncul sebelum Anda menjawab.',
+        'Untuk soal Uraian Panjang (Nomor 26–30), tuliskan jawaban terstruktur lalu centang kesesuaian poin kunci/rubrik saat menekan "Jawab" agar skor terhitung akurat.',
+        'Nilai akhir dihitung dengan rumus: Nilai = (Jumlah jawaban benar / Total soal) × 100. Gunakan tombol "Coba Lagi" untuk mengulang ujian tanpa batas dengan urutan soal dan pilihan jawaban yang diacak.'
+      ]
+    };
+
+    const DEFAULT_QUESTIONS = [
+      // BAGIAN I. PILIHAN GANDA (SOAL NOMOR 1–5)
+      {
+        id: 1,
+        number: 1,
+        section: 'Bagian I. Pilihan Ganda',
+        type: 'PG',
+        typeLabel: 'Pilihan Ganda',
+        topic: 'Pemilu Pertama 1955 & Sistem Multipartai (Demokrasi Liberal)',
+        category: 'Demokrasi Liberal, Pemilu 1955 & Ekonomi',
+        sourceIllustration: {
+          badge: 'Ilustrasi Visual & Deskripsi (Untuk Soal Nomor 1)',
+          title: '[Ilustrasi Foto/Poster Pemilu 1955]',
+          description:
+            'Antrean warga di tempat pemungutan suara (TPS) pada Pemilu Pertama 1955 yang diikuti puluhan partai politik dan organisasi massa (seperti PNI, Masyumi, NU, dan PKI) dalam sistem multipartai pada masa Demokrasi Liberal.'
+        },
+        prompt:
+          'Berdasarkan ilustrasi pelaksanaan Pemilu Pertama Tahun 1955 pada masa Demokrasi Liberal yang menerapkan sistem multipartai, analisis yang paling tepat mengenai dampak penerapan sistem multipartai tersebut adalah...',
+        options: [
+          {
+            key: 'A',
+            text: 'Terbentuknya banyak partai politik mendorong dinamika demokrasi dan keterwakilan luas, tetapi juga memicu fragmentasi koalisi kabinet yang sering berganti sehingga stabilitas pemerintahan kurang berkesinambungan'
+          },
+          {
+            key: 'B',
+            text: 'Sistem multipartai langsung menghapus seluruh perbedaan ideologi politik dan menghasilkan pemerintahan tunggal yang bertahan selama sembilan tahun tanpa pergantian kabinet'
+          },
+          {
+            key: 'C',
+            text: 'Pemilu 1955 hanya diikuti oleh dua partai besar sehingga oposisi parlemen tidak pernah terbentuk dalam kabinet'
+          },
+          {
+            key: 'D',
+            text: 'Penerapan sistem multipartai mencegah seluruh konflik kepentingan antarpartai di DPR maupun kabinet'
+          }
+        ],
+        correctAnswer: 'A',
+        explanation:
+          'Sistem multipartai pada Pemilu 1955 memperluas partisipasi politik dan keterwakilan aspirasi masyarakat, tetapi menghasilkan koalisi kabinet yang rapuh dan sering berganti (jatuh bangun) sehingga stabilitas pemerintahan kurang berkesinambungan.'
+      },
+      {
+        id: 2,
+        number: 2,
+        section: 'Bagian I. Pilihan Ganda',
+        type: 'PG',
+        typeLabel: 'Pilihan Ganda',
+        topic: 'Diplomasi Revolusi Kemerdekaan & Relevansi Diplomasi Masa Kini',
+        category: 'Revolusi Kemerdekaan & Diplomasi (1945–1950)',
+        sourceIllustration: {
+          badge: 'Kutipan Arsip Nasional RI (Untuk Soal Nomor 2)',
+          title: '[Kutipan Arsip Perjuangan Diplomasi]',
+          description:
+            'Pada masa Revolusi Kemerdekaan, perjuangan bersenjata di lapangan dipadukan dengan jalur diplomasi internasional melalui perundingan, pelibatan Komisi Tiga Negara (KTN)/UNCI, dan dukungan opini dunia agar kedaulatan Republik Indonesia diakui secara de facto maupun de jure.'
+        },
+        prompt:
+          'Berdasarkan kutipan arsip nasional tentang perjuangan mempertahankan kemerdekaan melalui jalur diplomasi, makna yang paling relevan untuk diplomasi Indonesia di masa kini adalah...',
+        options: [
+          {
+            key: 'A',
+            text: 'Diplomasi yang kuat bertumpu pada kejelasan prinsip kedaulatan nasional, kesiapan argumentasi hukum/kepentingan, dukungan kemitraan internasional, serta keselarasan antara kekuatan dalam negeri dan peran luar negeri'
+          },
+          {
+            key: 'B',
+            text: 'Diplomasi modern hanya bergantung pada tekanan militer tanpa memerlukan kerja sama multilateral maupun hukum internasional'
+          },
+          {
+            key: 'C',
+            text: 'Indonesia harus menutup seluruh perundingan bilateral dan hanya mengandalkan bantuan sepihak dari negara asing'
+          },
+          {
+            key: 'D',
+            text: 'Pengalaman diplomasi masa lalu tidak lagi relevan karena tantangan hubungan internasional masa kini sudah sepenuhnya berbeda'
+          }
+        ],
+        correctAnswer: 'A',
+        explanation:
+          'Pengalaman diplomasi masa Revolusi Kemerdekaan menunjukkan bahwa diplomasi yang kuat bertumpu pada kejelasan prinsip kedaulatan nasional, kesiapan argumentasi, dukungan kemitraan internasional, serta keselarasan antara kekuatan dalam negeri dan peran luar negeri.'
+      },
+      {
+        id: 3,
+        number: 3,
+        section: 'Bagian I. Pilihan Ganda',
+        type: 'PG',
+        typeLabel: 'Pilihan Ganda',
+        topic: 'Peralihan Demokrasi Liberal ke Demokrasi Terpimpin (Dekrit 5 Juli 1959)',
+        category: 'Demokrasi Terpimpin & NASAKOM (1959–1965)',
+        prompt:
+          'Pada periode 1950–1959 Indonesia menjalankan sistem Demokrasi Liberal dengan kabinet parlementer yang kerap jatuh bangun, sedangkan sejak Dekrit Presiden 5 Juli 1959 hingga 1965 diterapkan Demokrasi Terpimpin. Analisis yang paling tepat mengenai alasan Presiden Soekarno mengubah sistem pemerintahan tersebut adalah...',
+        options: [
+          {
+            key: 'A',
+            text: 'Ketidakstabilan politik akibat seringnya pergantian kabinet, kebuntuan Konstituante dalam merumuskan undang-undang dasar baru, serta pergolakan daerah dinilai menghambat efektivitas pemerintahan sehingga mendorong pemusatan kepemimpinan eksekutif'
+          },
+          {
+            key: 'B',
+            text: 'Parlemen dan seluruh partai politik sepakat membubarkan diri secara sukarela karena anggaran negara berlebih'
+          },
+          {
+            key: 'C',
+            text: 'Konstituante telah berhasil menetapkan UUD baru secara mufakat pada tahun 1955 tanpa hambatan politik'
+          },
+          {
+            key: 'D',
+            text: 'Perekonomian nasional berada dalam kondisi sangat stabil sehingga sistem pemerintahan perlu diubah semata-mata untuk memperbanyak pemilu'
+          }
+        ],
+        correctAnswer: 'A',
+        explanation:
+          'Instabilitas politik akibat seringnya pergantian kabinet parlementer, kebuntuan Konstituante dalam menetapkan UUD baru, serta pergolakan daerah mendorong Presiden Soekarno mengeluarkan Dekrit 5 Juli 1959 dan beralih ke Demokrasi Terpimpin.'
+      },
+      {
+        id: 4,
+        number: 4,
+        section: 'Bagian I. Pilihan Ganda',
+        type: 'PG',
+        typeLabel: 'Pilihan Ganda',
+        topic: 'Sentralisasi Kekuasaan & Dinamika Demokrasi Terpimpin (1959–1965)',
+        category: 'Demokrasi Terpimpin & NASAKOM (1959–1965)',
+        sourceIllustration: {
+          badge: 'Ilustrasi & Deskripsi Suasana Politik Demokrasi Terpimpin (Untuk Soal Nomor 4)',
+          title: '[Ilustrasi Suasana Politik 1959–1965]',
+          description:
+            'Pidato kenegaraan di hadapan lembaga perwakilan yang telah ditata ulang, penguatan peranan eksekutif Presiden, serta pembatasan ruang gerak partai politik yang tidak sejalan dengan haluan negara.'
+        },
+        prompt:
+          'Berdasarkan ilustrasi dan deskripsi suasana politik pada masa Demokrasi Terpimpin, analisis yang tepat mengenai hubungan antara sistem politik dan demokrasi pada masa tersebut adalah...',
+        options: [
+          {
+            key: 'A',
+            text: 'Sistem politik bergeser menuju sentralisasi kekuasaan di tangan Presiden/Panglima Tertinggi Revolusi, sehingga praktik demokrasi liberal berbasis checks and balances melemah dan diarahkan pada konsensus yang dipimpin negara'
+          },
+          {
+            key: 'B',
+            text: 'Kekuasaan presiden berada sepenuhnya di bawah kendali mutlak partai-partai oposisi di DPRGR tanpa hak prerogatif eksekutif'
+          },
+          {
+            key: 'C',
+            text: 'Demokrasi Terpimpin memperluas kebebasan pers dan oposisi politik secara tak terbatas melebihi masa Demokrasi Liberal'
+          },
+          {
+            key: 'D',
+            text: 'Sistem politik pada masa Demokrasi Terpimpin memisahkan kekuasaan eksekutif dan yudikatif secara ketat tanpa campur tangan politik'
+          }
+        ],
+        correctAnswer: 'A',
+        explanation:
+          'Demokrasi Terpimpin menggeser sistem politik ke arah sentralisasi kekuasaan pada eksekutif/Presiden sehingga mekanisme checks and balances melemah dan diarahkan pada kepemimpinan/konsensus terpusat.'
+      },
+      {
+        id: 5,
+        number: 5,
+        section: 'Bagian I. Pilihan Ganda',
+        type: 'PG',
+        typeLabel: 'Pilihan Ganda',
+        topic: 'Penyimpangan Ketatanegaraan Masa Demokrasi Terpimpin / Orde Lama',
+        category: 'Demokrasi Terpimpin & NASAKOM (1959–1965)',
+        prompt:
+          'Dalam kehidupan politik pada masa Demokrasi Terpimpin (bagian dari periode Orde Lama), muncul berbagai kebijakan dan praktik ketatanegaraan yang dinilai menyimpang dari UUD 1945. Analisis yang tepat mengenai bentuk penyimpangan pada masa tersebut adalah...',
+        options: [
+          {
+            key: 'A',
+            text: 'Pengangkatan Presiden seumur hidup melalui ketetapan MPRS, pembubaran DPR hasil pemilu dan pembentukannya kembali sebagai DPRGR, serta penyederhanaan/pembatasan kepartaian yang menggeser prinsip kedaulatan rakyat'
+          },
+          {
+            key: 'B',
+            text: 'Penyelenggaraan pemilu multipartai setiap dua tahun sekali dengan pengawasan ketat lembaga peradilan independen'
+          },
+          {
+            key: 'C',
+            text: 'Pembatasan masa jabatan presiden maksimal satu periode dan penghapusan seluruh lembaga musyawarah'
+          },
+          {
+            key: 'D',
+            text: 'Penyerahan seluruh kebijakan pertahanan dan luar negeri kepada dewan perwakilan daerah tanpa koordinasi pemerintah pusat'
+          }
+        ],
+        correctAnswer: 'A',
+        explanation:
+          'Bentuk penyimpangan ketatanegaraan pada masa Orde Lama/Demokrasi Terpimpin antara lain pengangkatan presiden seumur hidup oleh MPRS, pembubaran DPR hasil pemilu dan pembentukannya kembali sebagai DPRGR, serta pembatasan/penyederhanaan partai politik.'
+      },
+
+      // BAGIAN II. PILIHAN GANDA KOMPLEKS (SOAL NOMOR 6–10)
+      {
+        id: 6,
+        number: 6,
+        section: 'Bagian II. Pilihan Ganda Kompleks',
+        type: 'PGK',
+        typeLabel: 'Pilihan Ganda Kompleks (Pilih 2)',
+        topic: 'Peran Sastrawan dalam Revolusi Indonesia (1945–1950)',
+        category: 'Revolusi Kemerdekaan & Diplomasi (1945–1950)',
+        selectCount: 2,
+        prompt:
+          'Pada masa Revolusi Indonesia (1945–1950), perjuangan mempertahankan kemerdekaan tidak hanya dilakukan melalui angkat senjata, tetapi juga melalui karya sastra yang menggugah semangat kebangsaan, kesadaran kemanusiaan, dan tekad merdeka atau mati. Analisis yang tepat mengenai peran sastrawan pada periode tersebut adalah... (Pilih 2 jawaban)',
+        options: [
+          {
+            key: 'A',
+            text: 'Menghasilkan puisi, cerpen, dan prosa perjuangan yang membakar semangat juang rakyat serta merekam realitas sosial-politik revolusi (seperti karya Chairil Anwar dan sastrawan Angkatan \'45)'
+          },
+          {
+            key: 'B',
+            text: 'Menjadikan karya sastra sebagai media kritik moral, peneguhan identitas kebangsaan, dan penguatan ketahanan mental rakyat menghadapi agresi militer'
+          },
+          {
+            key: 'C',
+            text: 'Menghindari seluruh tema kemerdekaan dan hanya menulis hiburan istana kolonial'
+          },
+          {
+            key: 'D',
+            text: 'Menggantikan seluruh fungsi komando operasi militer di garis depan pertempuran'
+          }
+        ],
+        correctAnswer: ['A', 'B'],
+        explanation:
+          'Sastrawan pada masa Revolusi (1945–1950) berperan menghasilkan karya sastra yang membangkitkan semangat perjuangan serta merekam realitas revolusi (A) dan menjadikannya media peneguhan identitas kebangsaan serta penguatan ketahanan mental rakyat (B).'
+      },
+      {
+        id: 7,
+        number: 7,
+        section: 'Bagian II. Pilihan Ganda Kompleks',
+        type: 'PGK',
+        typeLabel: 'Pilihan Ganda Kompleks (Pilih 2)',
+        topic: 'Peran Seniman & Seni Perjuangan (1945–1950)',
+        category: 'Revolusi Kemerdekaan & Diplomasi (1945–1950)',
+        selectCount: 2,
+        sourceIllustration: {
+          badge: 'Ilustrasi & Deskripsi Peran Seniman Revolusi 1945–1950 (Untuk Soal Nomor 7)',
+          title: '[Ilustrasi Seni Perjuangan]',
+          description:
+            'Poster perjuangan, lukisan bertema revolusi, dan pertunjukan seni rakyat yang diproduksi para pelukis, pematung, dan seniman budaya (seperti Sudjojono, Affandi, dan seniman sanggar perjuangan) untuk mengobarkan semangat perlawanan dan mendokumentasikan perjuangan fisik.'
+        },
+        prompt:
+          'Berdasarkan ilustrasi dan deskripsi tentang peran seniman pada periode Revolusi Indonesia 1945–1950, analisis yang tepat mengenai peran seniman dalam mempertahankan kemerdekaan adalah... (Pilih 2 jawaban)',
+        options: [
+          {
+            key: 'A',
+            text: 'Menciptakan karya seni rupa, poster, dan dokumentasi visual perjuangan yang membangkitkan solidaritas serta semangat perlawanan rakyat'
+          },
+          {
+            key: 'B',
+            text: 'Menyebarluaskan pesan kemerdekaan dan keteguhan hati bangsa ke berbagai lapisan masyarakat maupun dunia luar melalui medium seni'
+          },
+          {
+            key: 'C',
+            text: 'Melarang seluruh seniman berpartisipasi dalam kegiatan sosial maupun komunikasi publik selama masa revolusi'
+          },
+          {
+            key: 'D',
+            text: 'Menjadikan seni lukis semata-mata sebagai komoditas ekspor bagi pemerintah kolonial Belanda'
+          }
+        ],
+        correctAnswer: ['A', 'B'],
+        explanation:
+          'Seniman pada masa Revolusi 1945–1950 berperan menciptakan karya seni rupa, poster, dan dokumentasi visual yang membangkitkan solidaritas/perlawanan (A) serta menyebarluaskan pesan kemerdekaan dan keteguhan bangsa melalui medium seni (B).'
+      },
+      {
+        id: 8,
+        number: 8,
+        section: 'Bagian II. Pilihan Ganda Kompleks',
+        type: 'PGK',
+        typeLabel: 'Pilihan Ganda Kompleks (Pilih 2)',
+        topic: 'Hasil Pemilu Pertama 1955 & Dinamika Koalisi Kabinet',
+        category: 'Demokrasi Liberal, Pemilu 1955 & Ekonomi',
+        selectCount: 2,
+        sourceIllustration: {
+          badge: 'Data Statistik Hasil Pemilu Pertama 1955 (Untuk Soal Nomor 8)',
+          title: '[Ringkasan Data Pemilu 1955]',
+          description:
+            'Pemilu DPR (September 1955) diikuti lebih dari 170 daftar/partai/organisasi dengan partisipasi pemilih tinggi; empat besar perolehan suara nasional diraih oleh PNI, Masyumi, NU, dan PKI, disusul puluhan partai kecil lainnya.'
+        },
+        prompt:
+          'Berdasarkan data statistik hasil Pemilu Pertama Tahun 1955, analisis yang tepat mengenai dinamika politik pada masa Demokrasi Liberal adalah... (Pilih 2 jawaban)',
+        options: [
+          {
+            key: 'A',
+            text: 'Hasil pemilu menunjukkan adanya empat kekuatan politik utama (PNI, Masyumi, NU, dan PKI) yang mencerminkan keragaman aliran/ideologi (nasionalis, Islam, dan sosialis/komunis) di masyarakat'
+          },
+          {
+            key: 'B',
+            text: 'Terpecahnya suara ke banyak partai membuat tidak ada satu partai pun yang meraih mayoritas mutlak sehingga pembentukan kabinet selalu memerlukan koalisi antarpartai yang rentan goyah'
+          },
+          {
+            key: 'C',
+            text: 'Satu partai tunggal langsung memperoleh lebih dari 90% kursi parlemen sehingga koalisi politik tidak pernah diperlukan'
+          },
+          {
+            key: 'D',
+            text: 'Pemilu 1955 membuktikan bahwa masyarakat Indonesia tidak memiliki partisipasi politik sama sekali'
+          }
+        ],
+        correctAnswer: ['A', 'B'],
+        explanation:
+          'Hasil Pemilu 1955 menampilkan empat partai besar (PNI, Masyumi, NU, dan PKI) yang mencerminkan keragaman aliran/ideologi masyarakat (A) serta terpecahnya suara ke banyak partai sehingga pembentukan kabinet memerlukan koalisi antarpartai yang rentan goyah (B).'
+      },
+      {
+        id: 9,
+        number: 9,
+        section: 'Bagian II. Pilihan Ganda Kompleks',
+        type: 'PGK',
+        typeLabel: 'Pilihan Ganda Kompleks (Pilih 2)',
+        topic: 'Konsep NASAKOM & Ketegangan Politik 1960–1965',
+        category: 'Demokrasi Terpimpin & NASAKOM (1959–1965)',
+        selectCount: 2,
+        sourceIllustration: {
+          badge: 'Kutipan Pidato Presiden Soekarno Tahun 1960 (Untuk Soal Nomor 9)',
+          title: '[Kutipan Pidato 1960]',
+          description:
+            'Dalam pidato kenegaraan dan perumusan haluan politik Demokrasi Terpimpin, Presiden Soekarno menekankan penyatuan kekuatan Nasionalis, Agama, dan Komunis (NASAKOM) sebagai poros persatuan revolusi Indonesia.'
+        },
+        prompt:
+          'Berdasarkan kutipan pidato Presiden Soekarno tahun 1960, analisis yang tepat mengenai dampak politik dari penerapan NASAKOM adalah... (Pilih 2 jawaban)',
+        options: [
+          {
+            key: 'A',
+            text: 'Meningkatkan posisi tawar dan ruang gerak politik PKI dalam struktur kenegaraan serta kehidupan politik nasional'
+          },
+          {
+            key: 'B',
+            text: 'Mempertajam polarisasi dan ketegangan ideologis antar-kekuatan politik (khususnya antara kelompok komunis, tentara, dan kelompok agama/nasionalis) yang memengaruhi stabilitas politik'
+          },
+          {
+            key: 'C',
+            text: 'Menghapuskan seluruh perbedaan pandangan politik dan menyatukan semua partai ke dalam satu ideologi tunggal secara damai tanpa ketegangan'
+          },
+          {
+            key: 'D',
+            text: 'Mengakhiri seluruh peran presiden dalam pengambilan keputusan politik nasional'
+          }
+        ],
+        correctAnswer: ['A', 'B'],
+        explanation:
+          'Penerapan NASAKOM memperkuat posisi tawar dan ruang gerak politik PKI (A) sekaligus mempertajam polarisasi dan ketegangan ideologis antar-kekuatan politik nasional (B).'
+      },
+      {
+        id: 10,
+        number: 10,
+        section: 'Bagian II. Pilihan Ganda Kompleks',
+        type: 'PGK',
+        typeLabel: 'Pilihan Ganda Kompleks (Pilih 2)',
+        topic: 'Program & Prestasi Kabinet Ali Sastroamidjoyo I (1953–1955)',
+        category: 'Demokrasi Liberal, Pemilu 1955 & Ekonomi',
+        selectCount: 2,
+        prompt:
+          'Kabinet Ali Sastroamidjoyo I (1953–1955) merupakan salah satu kabinet pada masa Demokrasi Liberal yang berupaya menjalankan program pembangunan dan politik luar negeri bebas aktif. Analisis yang tepat mengenai prestasi dan program kerja yang berhasil dilaksanakan pada masa tersebut adalah... (Pilih 2 jawaban)',
+        options: [
+          {
+            key: 'A',
+            text: 'Menyelenggarakan Konferensi Asia-Afrika (KAA) di Bandung pada tahun 1955 yang memperkuat posisi Indonesia dalam politik internasional dan solidaritas bangsa-bangsa Asia-Afrika'
+          },
+          {
+            key: 'B',
+            text: 'Melakukan persiapan dan meletakkan dasar penyelenggaraan Pemilu Pertama 1955 serta mengupayakan pemulihan keamanan dan pembangunan ekonomi nasional'
+          },
+          {
+            key: 'C',
+            text: 'Menyelesaikan seluruh sengketa Irian Barat secara militer dalam waktu tiga bulan setelah kabinet dilantik'
+          },
+          {
+            key: 'D',
+            text: 'Membubarkan DPR dan menetapkan sistem pemerintahan presidensial mutlak tanpa pemilu'
+          }
+        ],
+        correctAnswer: ['A', 'B'],
+        explanation:
+          'Kabinet Ali Sastroamidjoyo I menonjol melalui penyelenggaraan Konferensi Asia-Afrika (KAA) di Bandung tahun 1955 (A) serta persiapan/dasar penyelenggaraan Pemilu Pertama 1955 dan upaya pemulihan keamanan/ekonomi (B).'
+      },
+
+      // BAGIAN III. BENAR–SALAH (SOAL NOMOR 11–15)
+      {
+        id: 11,
+        number: 11,
+        section: 'Bagian III. Benar–Salah',
+        type: 'BS',
+        typeLabel: 'Benar–Salah',
+        topic: 'Perundingan Renville (1948) & Garis Demarkasi van Mook',
+        category: 'Revolusi Kemerdekaan & Diplomasi (1945–1950)',
+        prompt:
+          '[Perundingan Renville] Perjanjian Renville (1948) menimbulkan dampak merugikan bagi wilayah Republik Indonesia karena pemberlakuan garis demarkasi van Mook yang mempersempit wilayah RI dan memaksa TNI melakukan hijrah dari kantong-kantong gerilya ke wilayah RI.',
+        options: [
+          { key: 'BENAR', text: 'BENAR' },
+          { key: 'SALAH', text: 'SALAH' }
+        ],
+        correctAnswer: 'BENAR',
+        explanation:
+          'BENAR — Perjanjian Renville (1948) merugikan posisi wilayah RI melalui pemberlakuan garis demarkasi van Mook yang mempersempit wilayah Republik Indonesia dan memaksa pasukan TNI hijrah ke wilayah RI.'
+      },
+      {
+        id: 12,
+        number: 12,
+        section: 'Bagian III. Benar–Salah',
+        type: 'BS',
+        typeLabel: 'Benar–Salah',
+        topic: 'Konferensi Meja Bundar / KMB (1949)',
+        category: 'Revolusi Kemerdekaan & Diplomasi (1945–1950)',
+        prompt:
+          '[Konferensi Meja Bundar / KMB] Konferensi Meja Bundar (KMB) tahun 1949 menghasilkan pengakuan kedaulatan dari Belanda kepada Republik Indonesia Serikat (RIS) dengan sejumlah kesepakatan, termasuk pembentukan Uni Indonesia-Belanda serta penundaan penyelesaian masalah Irian Barat.',
+        options: [
+          { key: 'BENAR', text: 'BENAR' },
+          { key: 'SALAH', text: 'SALAH' }
+        ],
+        correctAnswer: 'BENAR',
+        explanation:
+          'BENAR — KMB 1949 menghasilkan penyerahan/pengakuan kedaulatan kepada Republik Indonesia Serikat (RIS) dengan ketentuan pembentukan Uni Indonesia-Belanda serta penundaan penyelesaian status Irian Barat.'
+      },
+      {
+        id: 13,
+        number: 13,
+        section: 'Bagian III. Benar–Salah',
+        type: 'BS',
+        typeLabel: 'Benar–Salah',
+        topic: 'Demokrasi Liberal — Kabinet Wilopo & Peristiwa Tanjung Morawa (1953)',
+        category: 'Demokrasi Liberal, Pemilu 1955 & Ekonomi',
+        prompt:
+          '[Demokrasi Liberal — Kabinet Wilopo & Peristiwa Tanjung Morawa] Peristiwa Tanjung Morawa (1953) terkait sengketa lahan eks-perkebunan tembakau di Sumatra Timur memicu perdebatan tajam di parlemen mengenai hak petani penggarap dan kebijakan pertanahan yang akhirnya turut mengguncang kedudukan Kabinet Wilopo.',
+        options: [
+          { key: 'BENAR', text: 'BENAR' },
+          { key: 'SALAH', text: 'SALAH' }
+        ],
+        correctAnswer: 'BENAR',
+        explanation:
+          'BENAR — Peristiwa Tanjung Morawa (1953) mengenai sengketa tanah perkebunan di Sumatra Timur memicu perdebatan tajam di parlemen dan berujung pada jatuhnya Kabinet Wilopo.'
+      },
+      {
+        id: 14,
+        number: 14,
+        section: 'Bagian III. Benar–Salah',
+        type: 'BS',
+        typeLabel: 'Benar–Salah',
+        topic: 'Demokrasi Liberal — Kebebasan Pers & Pergantian Kabinet',
+        category: 'Demokrasi Liberal, Pemilu 1955 & Ekonomi',
+        prompt:
+          '[Demokrasi Liberal] Kehidupan politik pada masa Demokrasi Liberal ditandai oleh kebebasan pers yang relatif luas, persaingan antarpartai politik yang terbuka, serta sering terjadinya mosi tidak percaya di parlemen yang menyebabkan usia kabinet relatif singkat.',
+        options: [
+          { key: 'BENAR', text: 'BENAR' },
+          { key: 'SALAH', text: 'SALAH' }
+        ],
+        correctAnswer: 'BENAR',
+        explanation:
+          'BENAR — Masa Demokrasi Liberal ditandai kebebasan pers yang relatif luas, kompetisi terbuka antarpartai politik, dan mosi tidak percaya di parlemen yang membuat kabinet sering berganti.'
+      },
+      {
+        id: 15,
+        number: 15,
+        section: 'Bagian III. Benar–Salah',
+        type: 'BS',
+        typeLabel: 'Benar–Salah',
+        topic: 'Demokrasi Liberal — Kabinet Djuanda & Deklarasi Djuanda (13 Desember 1957)',
+        category: 'Demokrasi Liberal, Pemilu 1955 & Ekonomi',
+        prompt:
+          '[Demokrasi Liberal — Kabinet Djuanda] Pada masa Kabinet Djuanda (Zaken Kabinet, 1957–1959), pemerintah mengeluarkan Deklarasi Djuanda (13 Desember 1957) yang menegaskan prinsip negara kepulauan sehingga memperluas wilayah laut teritorial Indonesia dan memperkuat kesatuan wilayah nasional.',
+        options: [
+          { key: 'BENAR', text: 'BENAR' },
+          { key: 'SALAH', text: 'SALAH' }
+        ],
+        correctAnswer: 'BENAR',
+        explanation:
+          'BENAR — Kabinet Djuanda mengeluarkan Deklarasi Djuanda (13 Desember 1957) yang menegaskan prinsip negara kepulauan dan memperkuat kesatuan wilayah laut nasional Indonesia.'
+      },
+
+      // BAGIAN IV. MENJODOHKAN (SOAL NOMOR 16–20)
+      {
+        id: 16,
+        number: 16,
+        section: 'Bagian IV. Menjodohkan',
+        type: 'JODOH',
+        typeLabel: 'Menjodohkan (A–H)',
+        topic: 'Bandung Lautan Api (Maret 1946)',
+        category: 'Revolusi Kemerdekaan & Diplomasi (1945–1950)',
+        sourceIllustration: {
+          badge: 'Deskripsi & Kutipan Sumber Sejarah (Untuk Soal Nomor 16–20)',
+          title: '[No. 16 — Bandung Lautan Api (Maret 1946)]',
+          description:
+            'Keputusan strategi membumihanguskan Bandung bagian selatan agar tidak dijadikan markas strategis tentara Sekutu/NICA, melibatkan tokoh militer dan pejuang seperti Kolonel A.H. Nasution, Mohammad Toha, dan Mohammad Ramdan.'
+        },
+        prompt:
+          '16. [Bandung Lautan Api] Analisis peran tokoh/pejuang dalam peristiwa Bandung Lautan Api. Pasangkan dengan pilihan jawaban yang tepat (A–H).',
+        matchItems: [
+          {
+            id: 'item_16',
+            label: '16. [Bandung Lautan Api] Peran tokoh militer (A.H. Nasution) dan pejuang/milisi (Mohammad Toha & Mohammad Ramdan):'
+          }
+        ],
+        options: MATCHING_OPTIONS_16_20,
+        correctAnswer: { item_16: 'A' },
+        explanation:
+          'Bandung Lautan Api melibatkan strategi bumi hangus oleh pimpinan TRI (seperti A.H. Nasution) serta keberanian pejuang milisi/rakyat (seperti Mohammad Toha) agar kota tidak dipakai musuh (Pilihan A).'
+      },
+      {
+        id: 17,
+        number: 17,
+        section: 'Bagian IV. Menjodohkan',
+        type: 'JODOH',
+        typeLabel: 'Menjodohkan (A–H)',
+        topic: 'Demokrasi Terpimpin — Pidato DPRGR 1960 (Jarek)',
+        category: 'Demokrasi Terpimpin & NASAKOM (1959–1965)',
+        sourceIllustration: {
+          badge: 'Deskripsi & Kutipan Sumber Sejarah (Untuk Soal Nomor 16–20)',
+          title: '[No. 17 — Kutipan Pidato Presiden Soekarno di DPRGR 1960]',
+          description:
+            'Pidato \'Jalannya Revolusi Kita\' (Jarek) yang menegaskan arah politik Demokrasi Terpimpin, Manipol-USDEK, dan penempatan kekuatan politik di bawah komando revolusi.'
+        },
+        prompt:
+          '17. [Demokrasi Terpimpin — Pidato DPRGR 1960] Analisis kebijakan politik pada masa Demokrasi Terpimpin berdasarkan kutipan pidato 1960. Pasangkan dengan pilihan jawaban yang tepat (A–H).',
+        matchItems: [
+          {
+            id: 'item_17',
+            label: '17. [Demokrasi Terpimpin — Pidato DPRGR 1960] Arah politik, Manipol-USDEK, dan penataan kekuatan politik:'
+          }
+        ],
+        options: MATCHING_OPTIONS_16_20,
+        correctAnswer: { item_17: 'B' },
+        explanation:
+          'Pidato di DPRGR 1960 (Jarek) menegaskan sentralisasi kekuasaan eksekutif, doktrin Manipol-USDEK sebagai haluan negara, serta pengawasan ketat terhadap partai politik dan lembaga perwakilan (Pilihan B).'
+      },
+      {
+        id: 18,
+        number: 18,
+        section: 'Bagian IV. Menjodohkan',
+        type: 'JODOH',
+        typeLabel: 'Menjodohkan (A–H)',
+        topic: 'Demokrasi Terpimpin — Ekonomi & Pidato Berdikari 1964',
+        category: 'Demokrasi Terpimpin & NASAKOM (1959–1965)',
+        sourceIllustration: {
+          badge: 'Deskripsi & Kutipan Sumber Sejarah (Untuk Soal Nomor 16–20)',
+          title: '[No. 18 — Kondisi Ekonomi Demokrasi Terpimpin & Pidato Sidang Kabinet 1964]',
+          description:
+            'Pidato \'Berdikari\' dan arahan ekonomi terpimpin yang menekankan kemandirian ekonomi, pengendalian inflasi tinggi, serta penataan produksi nasional.'
+        },
+        prompt:
+          '18. [Demokrasi Terpimpin — Ekonomi & Pidato 1964] Analisis kebijakan ekonomi pada masa Demokrasi Terpimpin berdasarkan kondisi ekonomi dan pidato 1964. Pasangkan dengan pilihan jawaban yang tepat (A–H).',
+        matchItems: [
+          {
+            id: 'item_18',
+            label: '18. [Demokrasi Terpimpin — Ekonomi & Pidato 1964] Prinsip berdikari, peran negara, dan penanganan inflasi:'
+          }
+        ],
+        options: MATCHING_OPTIONS_16_20,
+        correctAnswer: { item_18: 'C' },
+        explanation:
+          'Kebijakan ekonomi Demokrasi Terpimpin menekankan prinsip berdikari, peran negara dalam sektor strategis, serta upaya mengatasi hiperinflasi dan kelangkaan barang kebutuhan (Pilihan C).'
+      },
+      {
+        id: 19,
+        number: 19,
+        section: 'Bagian IV. Menjodohkan',
+        type: 'JODOH',
+        typeLabel: 'Menjodohkan (A–H)',
+        topic: 'Pemberontakan DI/TII & Tokoh Pemimpinnya',
+        category: 'Revolusi Kemerdekaan & Diplomasi (1945–1950)',
+        sourceIllustration: {
+          badge: 'Deskripsi & Kutipan Sumber Sejarah (Untuk Soal Nomor 16–20)',
+          title: '[No. 19 — Pemberontakan DI/TII]',
+          description:
+            'Gerakan Darul Islam / Tentara Islam Indonesia yang muncul di beberapa daerah dengan tokoh pemimpin seperti Kartosoewirjo (Jawa Barat), Kahar Muzakkar (Sulawesi Selatan), dan Daud Beureueh (Aceh).'
+        },
+        prompt:
+          '19. [DI/TII] Analisis tokoh-tokoh yang terlibat dalam pemberontakan DI/TII di Jawa Barat, Sulawesi Selatan, dan Aceh. Pasangkan dengan pilihan jawaban yang tepat (A–H).',
+        matchItems: [
+          {
+            id: 'item_19',
+            label: '19. [DI/TII] Pemimpin pemberontakan DI/TII di Jawa Barat, Sulawesi Selatan, dan Aceh:'
+          }
+        ],
+        options: MATCHING_OPTIONS_16_20,
+        correctAnswer: { item_19: 'D' },
+        explanation:
+          'Tokoh-tokoh DI/TII yang dimaksud adalah S.M. Kartosoewirjo (Jawa Barat), Kahar Muzakkar (Sulawesi Selatan), dan Daud Beureueh (Aceh) (Pilihan D).'
+      },
+      {
+        id: 20,
+        number: 20,
+        section: 'Bagian IV. Menjodohkan',
+        type: 'JODOH',
+        typeLabel: 'Menjodohkan (A–H)',
+        topic: 'Kebijakan Ekonomi Masa Demokrasi Liberal',
+        category: 'Demokrasi Liberal, Pemilu 1955 & Ekonomi',
+        sourceIllustration: {
+          badge: 'Deskripsi & Kutipan Sumber Sejarah (Untuk Soal Nomor 16–20)',
+          title: '[No. 20 — Kebijakan Ekonomi Demokrasi Liberal]',
+          description:
+            'Upaya pemerintah memperbaiki kondisi ekonomi pasca-kemerdekaan melalui kebijakan seperti Gunting Syafruddin, Gerakan Benteng, dan Finansial Ekonomi (Finek).'
+        },
+        prompt:
+          '20. [Kebijakan Ekonomi Demokrasi Liberal] Analisis kebijakan ekonomi yang diterapkan untuk memperbaiki kondisi ekonomi pada masa Demokrasi Liberal. Pasangkan dengan pilihan jawaban yang tepat (A–H).',
+        matchItems: [
+          {
+            id: 'item_20',
+            label: '20. [Kebijakan Ekonomi Demokrasi Liberal] Gunting Syafruddin, Gerakan Benteng, dan Finek:'
+          }
+        ],
+        options: MATCHING_OPTIONS_16_20,
+        correctAnswer: { item_20: 'E' },
+        explanation:
+          'Kebijakan ekonomi masa Demokrasi Liberal meliputi pemotongan nilai uang (Gunting Syafruddin), perlindungan pengusaha pribumi (Gerakan Benteng), dan perundingan pembatalan ikatan ekonomi merugikan (Finek) (Pilihan E).'
+      },
+
+      // BAGIAN V. ISIAN SINGKAT (SOAL NOMOR 21–25)
+      {
+        id: 21,
+        number: 21,
+        section: 'Bagian V. Isian Singkat',
+        type: 'ISIAN',
+        typeLabel: 'Isian Singkat',
+        topic: 'Demokrasi Terpimpin — Kutipan Pemikiran Politik Bung Hatta',
+        category: 'Demokrasi Terpimpin & NASAKOM (1959–1965)',
+        prompt:
+          '[Demokrasi Terpimpin — Kutipan Pemikiran Politik Bung Hatta] Dalam buku \'Demokrasi Kita / Demokrasi untuk Indonesia: Pemikiran Politik Bung Hatta\', Bung Hatta mengkritik kecenderungan kekuasaan terpusat dan menekankan pentingnya demokrasi yang sehat, kedaulatan rakyat, serta kontrol konstitusional. Berdasarkan pemikiran tersebut, sistem politik pada masa pemerintahan Soekarno (Demokrasi Terpimpin) cenderung memusatkan kekuasaan pada ____________________.',
+        acceptedKeywords: ['presiden', 'eksekutif', 'pusat', 'pemerintah pusat', 'kepala negara', 'soekarno'],
+        correctAnswer: 'Presiden / eksekutif (pusat)',
+        explanation:
+          'Pemikiran Bung Hatta menekankan keseimbangan kekuasaan dan kontrol demokrasi, sedangkan Demokrasi Terpimpin memusatkan kekuasaan pada Presiden / eksekutif (pusat).'
+      },
+      {
+        id: 22,
+        number: 22,
+        section: 'Bagian V. Isian Singkat',
+        type: 'ISIAN',
+        typeLabel: 'Isian Singkat',
+        topic: 'Kebijakan Ekonomi Masa Demokrasi Liberal — Gunting Syafruddin',
+        category: 'Demokrasi Liberal, Pemilu 1955 & Ekonomi',
+        prompt:
+          '[Kebijakan Ekonomi Masa Demokrasi Liberal] Untuk mengatasi inflasi dan meningkatkan penerimaan/devisa negara pada masa Demokrasi Liberal, pemerintah menerapkan kebijakan pemotongan nilai mata uang tertentu (seperti nilai uang Rp5 ke atas dipotong setengahnya menjadi uang kertas baru) yang dikenal dengan kebijakan ____________________.',
+        acceptedKeywords: ['gunting syafruddin', 'syafruddin', 'pemotongan nilai uang'],
+        correctAnswer: 'Gunting Syafruddin',
+        explanation:
+          'Kebijakan pemotongan nilai uang oleh Menteri Keuangan Syafruddin Prawiranegara untuk menekan inflasi dan menyehatkan keuangan negara dikenal dengan nama Gunting Syafruddin.'
+      },
+      {
+        id: 23,
+        number: 23,
+        section: 'Bagian V. Isian Singkat',
+        type: 'ISIAN',
+        typeLabel: 'Isian Singkat',
+        topic: 'Agresi Militer Belanda I & II — Perang Gerilya',
+        category: 'Revolusi Kemerdekaan & Diplomasi (1945–1950)',
+        prompt:
+          '[Agresi Militer Belanda] Agresi Militer Belanda I (1947) dan Agresi Militer Belanda II (1948) menimbulkan dampak berupa jatuhnya korban jiwa, kerusakan infrastruktur ekonomi, pendudukan sejumlah kota/ibu kota, serta pergeseran strategi perjuangan melalui ____________________ dan diplomasi internasional.',
+        acceptedKeywords: ['perang gerilya', 'gerilya'],
+        correctAnswer: 'perang gerilya',
+        explanation:
+          'Perpaduan perang gerilya di dalam negeri dan diplomasi internasional menjadi strategi utama rakyat serta TNI menghadapi agresi militer Belanda.'
+      },
+      {
+        id: 24,
+        number: 24,
+        section: 'Bagian V. Isian Singkat',
+        type: 'ISIAN',
+        typeLabel: 'Isian Singkat',
+        topic: 'Upaya Mempertahankan Kemerdekaan Melalui Jalur Diplomasi — Gencatan Senjata',
+        category: 'Revolusi Kemerdekaan & Diplomasi (1945–1950)',
+        prompt:
+          '[Upaya Mempertahankan Kemerdekaan Melalui Jalur Diplomasi] Dalam konflik Indonesia–Belanda pada masa Revolusi Kemerdekaan, Perserikatan Bangsa-Bangsa (PBB) berperan melalui pembentukan komisi perundingan/pengawasan (seperti Komisi Tiga Negara yang kemudian menjadi UNCI) serta mendorong ____________________ agar kekerasan militer dihentikan dan sengketa diselesaikan lewat perundingan.',
+        acceptedKeywords: ['gencatan senjata', 'ceasefire', 'penghentian tembak menembak'],
+        correctAnswer: 'gencatan senjata (ceasefire)',
+        explanation:
+          'PBB melalui KTN/UNCI mendorong gencatan senjata (ceasefire) dan memfasilitasi perundingan damai antara Indonesia dan Belanda.'
+      },
+      {
+        id: 25,
+        number: 25,
+        section: 'Bagian V. Isian Singkat',
+        type: 'ISIAN',
+        typeLabel: 'Isian Singkat',
+        topic: 'Demokrasi Terpimpin — Pidato Pertanggungjawaban Nawaksara (1966)',
+        category: 'Dinamika Politik 1965–1966 (TRITURA & SUPERSEMAR)',
+        prompt:
+          '[Demokrasi Terpimpin — Pidato Pertanggungjawaban] Pada masa akhir pemerintahan Demokrasi Terpimpin (Sidang Umum MPRS 1966), Ir. Soekarno menyampaikan pidato pertanggungjawaban mengenai perjalanan pemerintahan dan peristiwa G30S yang berjudul ____________________.',
+        acceptedKeywords: ['nawaksara'],
+        correctAnswer: 'Nawaksara',
+        explanation:
+          'Pidato pertanggungjawaban Presiden Soekarno di hadapan MPRS pada tahun 1966 berjudul Nawaksara.'
+      },
+
+      // BAGIAN VI. URAIAN PANJANG (SOAL NOMOR 26–30)
+      {
+        id: 26,
+        number: 26,
+        section: 'Bagian VI. Uraian Panjang',
+        type: 'URAIAN',
+        typeLabel: 'Uraian Panjang',
+        topic: 'Peran Rakyat Indonesia dalam Mempertahankan Kemerdekaan (Poster 1946)',
+        category: 'Revolusi Kemerdekaan & Diplomasi (1945–1950)',
+        sourceIllustration: {
+          badge: 'Sumber Primer Poster Jawatan Penerangan RI Tahun 1946 (Untuk Soal Nomor 26)',
+          title: '[Sumber Primer — Poster Jawatan Penerangan Republik Indonesia (1946), koleksi Leiden University]',
+          description:
+            'Poster propaganda perjuangan tahun 1946 yang menampilkan seruan persatuan rakyat, keteguhan mempertahankan kemerdekaan Republik Indonesia, dan kesiapsiagaan menghadapi ancaman kembalinya kekuasaan kolonial.'
+        },
+        prompt:
+          '[Peran Rakyat Indonesia dalam Mempertahankan Kemerdekaan] Berdasarkan sumber primer poster Jawatan Penerangan Republik Indonesia tahun 1946 tersebut, simpulkan informasi sejarah mengenai semangat perjuangan, mobilisasi dukungan rakyat, dan upaya mempertahankan kemerdekaan Indonesia!',
+        rubricPoints: [
+          'Menyimpulkan semangat perjuangan dan keteguhan mempertahankan kemerdekaan RI pada awal revolusi (1946).',
+          'Menjelaskan peran mobilisasi dukungan serta persatuan rakyat dalam menghadapi ancaman kembalinya kekuasaan kolonial.',
+          'Mengaitkan sumber primer poster propaganda sebagai media komunikasi perjuangan dan penguatan kedaulatan RI.'
+        ],
+        correctAnswer:
+          'Poster Jawatan Penerangan RI tahun 1946 mencerminkan upaya pemerintah dan rakyat memperkuat persatuan, kesadaran kebangsaan, serta kesiapan mempertahankan kedaulatan RI dari ancaman kolonialisme pada awal revolusi.',
+        explanation:
+          'Poster Jawatan Penerangan RI tahun 1946 mencerminkan upaya pemerintah dan rakyat memperkuat persatuan, kesadaran kebangsaan, mobilisasi dukungan masyarakat, serta kesiapsiagaan mempertahankan kedaulatan Republik Indonesia dari ancaman kembalinya kolonialisme pada masa awal revolusi kemerdekaan.'
+      },
+      {
+        id: 27,
+        number: 27,
+        section: 'Bagian VI. Uraian Panjang',
+        type: 'URAIAN',
+        typeLabel: 'Uraian Panjang',
+        topic: 'Kebijakan Ekonomi Masa Demokrasi Liberal — Gerakan Benteng & RUP',
+        category: 'Demokrasi Liberal, Pemilu 1955 & Ekonomi',
+        prompt:
+          '[Kebijakan Ekonomi Masa Demokrasi Liberal] Analisislah perbandingan antara kebijakan ekonomi Gerakan Benteng dan Rencana Urgensi Perekonomian (RUP / Program Sumitro) pada masa Demokrasi Liberal ditinjau dari tujuan, pelaksanaan, dan hasilnya!',
+        rubricPoints: [
+          'Membandingkan tujuan: Gerakan Benteng menumbuhkan/melindungi pengusaha pribumi, sedangkan RUP (Program Sumitro) membangun industri nasional dan transformasi struktur ekonomi.',
+          'Membandingkan pelaksanaan: Gerakan Benteng lewat pemberian lisensi impor & kredit modal, sedangkan RUP lewat rencana pembangunan industri/infrastruktur dan tenaga ahli.',
+          'Menganalisis hasil dan kendala: keduanya menghadapi hambatan modal, manajemen/pengelolaan, dan persaingan usaha sehingga hasilnya belum optimal secara menyeluruh.'
+        ],
+        correctAnswer:
+          'Gerakan Benteng berfokus pada penguatan pengusaha pribumi melalui pemberian lisensi impor dan kredit modal, sedangkan Rencana Urgensi Perekonomian (Program Sumitro) berfokus pada pengembangan industri nasional, pembangunan infrastruktur ekonomi, dan transformasi struktur ekonomi; keduanya menghadapi kendala modal, pengelolaan, dan persaingan usaha.',
+        explanation:
+          'Gerakan Benteng berfokus pada penguatan dan perlindungan pengusaha pribumi melalui pemberian lisensi impor serta bantuan kredit modal, sedangkan Rencana Urgensi Perekonomian (RUP / Program Sumitro) menitikberatkan pada pengembangan industri nasional, pembangunan infrastruktur ekonomi, dan penguatan struktur ekonomi. Keduanya menghadapi kendala permodalan, pengelolaan usaha, serta persaingan ekonomi.'
+      },
+      {
+        id: 28,
+        number: 28,
+        section: 'Bagian VI. Uraian Panjang',
+        type: 'URAIAN',
+        typeLabel: 'Uraian Panjang',
+        topic: 'Peristiwa G30S/PKI (1965) — Sikap Objektif dalam Perspektif Sejarah',
+        category: 'Dinamika Politik 1965–1966 (TRITURA & SUPERSEMAR)',
+        prompt:
+          '[Peristiwa G30S/PKI] Dalam kajian sejarah Indonesia, peristiwa G30S/PKI (1965) memiliki berbagai interpretasi dan kontroversi mengenai dalang, proses kejadian, serta dampak politiknya. Analisislah bagaimana cara menyikapi kontroversi peristiwa tersebut secara objektif berdasarkan perspektif sejarah!',
+        rubricPoints: [
+          'Menerapkan sikap kritis dan objektif dengan bertumpu pada verifikasi sumber sejarah (dokumen, arsip, kesaksian, dan kajian historiografi).',
+          'Membedakan antara fakta peristiwa yang terkonfirmasi dengan berbagai tafsir/hipotesis yang berkembang dalam historiografi.',
+          'Menempatkan peristiwa 1965 dalam konteks situasi politik, ekonomi, dan relasi kekuatan nasional saat itu secara proporsional.'
+        ],
+        correctAnswer:
+          'Dalam perspektif sejarah, kontroversi G30S/PKI disikapi secara kritis, objektif, dan berbasis sumber sejarah (dokumen, kesaksian, arsip, serta historiografi) dengan membedakan fakta peristiwa, konteks politik-ekonomi-militer 1965, dan tafsir yang berkembang.',
+        explanation:
+          'Dalam perspektif sejarah, kontroversi G30S/PKI disikapi secara kritis, objektif, dan berbasis sumber sejarah (dokumen, kesaksian, arsip, serta berbagai kajian historiografi) dengan membedakan fakta peristiwa yang dapat diverifikasi, konteks politik-ekonomi-kekuatan nasional tahun 1965, dan interpretasi yang berkembang.'
+      },
+      {
+        id: 29,
+        number: 29,
+        section: 'Bagian VI. Uraian Panjang',
+        type: 'URAIAN',
+        typeLabel: 'Uraian Panjang',
+        topic: 'TRITURA (1966) — Penerapan Semangat Perjuangan Masa Kini',
+        category: 'Dinamika Politik 1965–1966 (TRITURA & SUPERSEMAR)',
+        prompt:
+          '[TRITURA] Pada masa akhir Demokrasi Terpimpin (awal 1966), mahasiswa dan berbagai elemen masyarakat menyuarakan Tuntutan Rakyat (TRITURA). Terapkan semangat perjuangan mahasiswa tersebut untuk membantu menyelesaikan permasalahan bangsa masa kini!',
+        rubricPoints: [
+          'Menangkap inti semangat TRITURA (kepedulian terhadap nasib rakyat, keadilan ekonomi, dan perbaikan tata kelola pemerintahan).',
+          'Menerapkan semangat kritis, idealisme, dan solidaritas mahasiswa secara konstruktif dan damai pada isu masa kini.',
+          'Menghadirkan contoh aksi nyata seperti gerakan anti-korupsi, advokasi berbasis data, literasi digital/anti-hoaks, atau pengabdian masyarakat.'
+        ],
+        correctAnswer:
+          'Semangat kritis, idealisme, dan kepedulian sosial mahasiswa pada masa TRITURA dapat diterapkan masa kini melalui gerakan anti-korupsi, advokasi kebijakan publik berbasis data, pengabdian masyarakat, dan solusi inovatif atas masalah sosial-ekonomi.',
+        explanation:
+          'Semangat kritis, idealisme, kepedulian terhadap kesejahteraan rakyat, dan keberanian moral mahasiswa pada masa TRITURA dapat diterapkan di masa kini melalui gerakan anti-korupsi, advokasi kebijakan publik berbasis data, pengabdian/pemberdayaan masyarakat, serta inovasi solusi atas persoalan sosial-ekonomi.'
+      },
+      {
+        id: 30,
+        number: 30,
+        section: 'Bagian VI. Uraian Panjang',
+        type: 'URAIAN',
+        typeLabel: 'Uraian Panjang',
+        topic: 'Hubungan SUPERSEMAR dengan TRITURA dalam Perubahan Kekuasaan (1966)',
+        category: 'Dinamika Politik 1965–1966 (TRITURA & SUPERSEMAR)',
+        prompt:
+          '[Hubungan SUPERSEMAR dengan TRITURA] Berdasarkan dinamika politik pasca-peristiwa G30S/PKI, muncurnya TRITURA, dan keluarnya Surat Perintah Sebelas Maret (SUPERSEMAR) tahun 1966, analisislah hubungan antara SUPERSEMAR dan TRITURA dalam perubahan peta kekuasaan politik nasional!',
+        rubricPoints: [
+          'Menjelaskan konteks tuntutan TRITURA (pembubaran PKI, pembersihan kabinet dari unsur G30S, dan penurunan harga) di tengah krisis politik-ekonomi pasca-1965.',
+          'Menjelaskan keluarnya SUPERSEMAR (11 Maret 1966) sebagai mandat/perintah pemulihan keamanan dan ketertiban.',
+          'Menganalisis keterkaitan keduanya dalam menggeser keseimbangan kekuasaan politik nasional dan mengakhiri dominasi politik masa Demokrasi Terpimpin.'
+        ],
+        correctAnswer:
+          'Tuntutan TRITURA (pembubaran PKI, pembersihan kabinet dari unsur G30S, dan penurunan harga) mencerminkan krisis politik-ekonomi pasca-1965; keluarnya SUPERSEMAR (11 Maret 1966) memberi landasan tindakan pemulihan keamanan dan ketertiban bagi pengemban perintah yang sekaligus memperkuat pergeseran keseimbangan kekuasaan politik nasional.',
+        explanation:
+          'Tuntutan TRITURA (pembubaran PKI, pembersihan kabinet dari unsur terlibat G30S, dan penurunan harga kebutuhan pokok) mencerminkan tekanan krisis politik-ekonomi pasca-1965; keluarnya SUPERSEMAR (11 Maret 1966) memberikan landasan tindakan pemulihan keamanan dan ketertiban bagi pemegang perintah yang sekaligus memperkuat pergeseran keseimbangan kekuasaan politik nasional.'
+      }
+    ];
+
+    // =========================================================================
+    // 2. STORAGE KEYS & APPLICATION STATE
+    // =========================================================================
+    const STORAGE_KEYS = {
+      QUESTIONS: 'smartexam_sejarah_xii_questions_v1',
+      CONFIG: 'smartexam_sejarah_xii_config_v1',
+      HISTORY: 'smartexam_sejarah_xii_history_v1'
+    };
+
+    function loadJSON(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : structuredClone(fallback);
+      } catch (err) {
+        console.error('Gagal memuat data dari localStorage:', err);
+        return structuredClone(fallback);
+      }
+    }
+
+    function saveJSON(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (err) {
+        console.error('Gagal menyimpan data ke localStorage:', err);
+      }
+    }
+
+    const state = {
+      currentView: 'home', // 'home' | 'exam' | 'results' | 'history' | 'admin'
+      questions: loadJSON(STORAGE_KEYS.QUESTIONS, DEFAULT_QUESTIONS),
+      config: loadJSON(STORAGE_KEYS.CONFIG, DEFAULT_EXAM_CONFIG),
+      history: loadJSON(STORAGE_KEYS.HISTORY, []),
+
+      // Active Exam Session State
+      exam: {
+        active: false,
+        sessionQuestions: [],
+        currentIndex: 0,
+        answers: {},        // { [questionId]: value }
+        submitted: {},      // { [questionId]: boolean }
+        evaluations: {},    // { [questionId]: { isCorrect: boolean, statusText: string, rubricMet: boolean } }
+        remainingSeconds: 90 * 60,
+        totalSeconds: 90 * 60,
+        warningShown: false,
+        timerInterval: null,
+        startedAt: null
+      },
+
+      // Latest Exam Result Summary
+      latestResult: null,
+
+      // Admin UI State
+      admin: {
+        editingId: null,
+        filterType: 'ALL',
+        searchQuery: ''
+      }
+    };
+
+    // Active Chart instances to clean up before re-rendering
+    let breakdownChartInstance = null;
+    let historyChartInstance = null;
+
+    // =========================================================================
+    // 3. UTILITY & TOAST / MODAL HELPERS
+    // =========================================================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const styles = {
+        info: 'bg-blue-600 text-white border-blue-700',
+        success: 'bg-emerald-600 text-white border-emerald-700',
+        warning: 'bg-amber-500 text-white border-amber-600',
+        danger: 'bg-rose-600 text-white border-rose-700'
+      };
+
+      const icons = {
+        info: 'info',
+        success: 'check-circle-2',
+        warning: 'alert-triangle',
+        danger: 'alert-octagon'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-lg text-sm font-medium animate-fade-in ${styles[type] || styles.info}`;
+      toast.innerHTML = `
+        <i data-lucide="${icons[type] || 'info'}" class="w-4 h-4 shrink-0"></i>
+        <span class="flex-1">${message}</span>
+      `;
+
+      container.appendChild(toast);
+      lucide.createIcons({ nodes: [toast] });
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-6px)';
+        toast.style.transition = 'all 0.2s ease';
+        setTimeout(() => toast.remove(), 220);
+      }, 3600);
+    }
+
+    function openConfirmModal({ title, message, confirmText = 'Ya, Lanjutkan', cancelText = 'Batal', danger = false }) {
+      return new Promise((resolve) => {
+        const backdrop = document.getElementById('modalBackdrop');
+        const titleEl = document.getElementById('modalTitle');
+        const msgEl = document.getElementById('modalMessage');
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        const cancelBtn = document.getElementById('modalCancelBtn');
+        const iconWrap = document.getElementById('modalIconWrap');
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        confirmBtn.textContent = confirmText;
+        cancelBtn.textContent = cancelText;
+
+        if (danger) {
+          confirmBtn.className = 'px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 transition-colors shadow-sm cursor-pointer';
+          iconWrap.className = 'w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0';
+        } else {
+          confirmBtn.className = 'px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm cursor-pointer';
+          iconWrap.className = 'w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0';
+        }
+
+        backdrop.classList.remove('hidden');
+        backdrop.classList.add('flex');
+        lucide.createIcons({ nodes: [backdrop] });
+
+        const cleanup = (result) => {
+          backdrop.classList.add('hidden');
+          backdrop.classList.remove('flex');
+          confirmBtn.removeEventListener('click', onConfirm);
+          cancelBtn.removeEventListener('click', onCancel);
+          backdrop.removeEventListener('click', onBackdrop);
+          resolve(result);
+        };
+
+        const onConfirm = () => cleanup(true);
+        const onCancel = () => cleanup(false);
+        const onBackdrop = (e) => {
+          if (e.target === backdrop) cleanup(false);
+        };
+
+        confirmBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+        backdrop.addEventListener('click', onBackdrop);
+      });
+    }
+
+    function formatSeconds(sec) {
+      const safe = Math.max(0, Math.floor(sec));
+      const hrs = Math.floor(safe / 3600);
+      const mins = Math.floor((safe % 3600) / 60);
+      const secs = safe % 60;
+      if (hrs > 0) {
+        return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function formatDurationHuman(sec) {
+      const safe = Math.max(0, Math.floor(sec));
+      const mins = Math.floor(safe / 60);
+      const secs = safe % 60;
+      if (mins === 0) return `${secs} detik`;
+      return `${mins} menit ${secs} detik`;
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    // =========================================================================
+    // 4. NAVIGATION & GUARD LOGIC
+    // =========================================================================
+    async function navigateTo(targetView) {
+      if (state.currentView === targetView && targetView !== 'exam') return;
+
+      // Guard if leaving an active exam
+      if (state.exam.active && targetView !== 'exam') {
+        const confirmed = await openConfirmModal({
+          title: 'Ujian Sedang Berlangsung',
+          message: 'Anda sedang mengerjakan ujian. Jika berpindah halaman sekarang, sesi ujian aktif akan dibatalkan dan tidak tersimpan ke riwayat. Yakin ingin keluar?',
+          confirmText: 'Keluar dari Ujian',
+          cancelText: 'Lanjutkan Ujian',
+          danger: true
+        });
+        if (!confirmed) return;
+        stopExamTimer();
+        state.exam.active = false;
+        updateHeaderTimerBadge();
+      }
+
+      state.currentView = targetView;
+      updateNavActiveStyles();
+      renderApp();
+    }
+
+    function updateNavActiveStyles() {
+      document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach((btn) => {
+        const isCurrent = btn.dataset.nav === state.currentView;
+        if (isCurrent) {
+          btn.className = btn.className.replace(/text-slate-600|hover:bg-slate-100/g, '');
+          btn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+        } else {
+          btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+          if (!btn.className.includes('text-slate-600')) {
+            btn.classList.add('text-slate-600', 'hover:bg-slate-100');
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // 5. TIMER ENGINE (CONTINUOUS ACROSS NAVIGATION)
+    // =========================================================================
+    function startExamTimer() {
+      stopExamTimer();
+      updateHeaderTimerBadge();
+
+      state.exam.timerInterval = setInterval(() => {
+        if (!state.exam.active) {
+          stopExamTimer();
+          return;
+        }
+
+        state.exam.remainingSeconds -= 1;
+        updateTimerDisplays();
+
+        // 5-minute warning (300 seconds)
+        if (state.exam.remainingSeconds === 300 && !state.exam.warningShown) {
+          state.exam.warningShown = true;
+          showToast('Peringatan: Sisa waktu ujian tinggal 5 menit!', 'warning');
+          const banner = document.getElementById('fiveMinWarningBanner');
+          if (banner) banner.classList.remove('hidden');
+        }
+
+        // Auto-submit when time reaches 0
+        if (state.exam.remainingSeconds <= 0) {
+          state.exam.remainingSeconds = 0;
+          updateTimerDisplays();
+          stopExamTimer();
+          showToast('Waktu ujian telah habis! Jawaban otomatis dikoreksi.', 'danger');
+          finalizeExam(true);
+        }
+      }, 1000);
+    }
+
+    function stopExamTimer() {
+      if (state.exam.timerInterval) {
+        clearInterval(state.exam.timerInterval);
+        state.exam.timerInterval = null;
+      }
+    }
+
+    function updateHeaderTimerBadge() {
+      const badge = document.getElementById('headerTimerBadge');
+      const text = document.getElementById('headerTimerText');
+      if (!badge || !text) return;
+
+      if (state.exam.active) {
+        badge.classList.remove('hidden');
+        badge.classList.add('flex');
+        text.textContent = formatSeconds(state.exam.remainingSeconds);
+
+        if (state.exam.remainingSeconds <= 300) {
+          badge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-600 border border-rose-300 timer-urgent';
+        } else {
+          badge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200';
+        }
+      } else {
+        badge.classList.add('hidden');
+        badge.classList.remove('flex');
+      }
+    }
+
+    function updateTimerDisplays() {
+      updateHeaderTimerBadge();
+      const examTimerEl = document.getElementById('examCountdownText');
+      const examTimerBox = document.getElementById('examTimerBox');
+      if (examTimerEl) {
+        examTimerEl.textContent = formatSeconds(state.exam.remainingSeconds);
+      }
+      if (examTimerBox && state.exam.remainingSeconds <= 300) {
+        examTimerBox.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-50 border border-rose-300 text-rose-700 font-bold text-sm timer-urgent';
+      }
+    }
+
+    // =========================================================================
+    // 6. ANSWER EVALUATION & GRADING LOGIC
+    // =========================================================================
+    function hasAnsweredQuestion(q, answerVal) {
+      if (answerVal === undefined || answerVal === null) return false;
+      if (q.type === 'PG' || q.type === 'BS') {
+        return typeof answerVal === 'string' && answerVal.trim().length > 0;
+      }
+      if (q.type === 'PGK') {
+        return Array.isArray(answerVal) && answerVal.length > 0;
+      }
+      if (q.type === 'ISIAN') {
+        return typeof answerVal === 'string' && answerVal.trim().length > 0;
+      }
+      if (q.type === 'JODOH') {
+        if (typeof answerVal !== 'object') return false;
+        const items = q.matchItems || [];
+        return items.length > 0 && items.every((it) => Boolean(answerVal[it.id]));
+      }
+      if (q.type === 'URAIAN') {
+        return typeof answerVal === 'string' && answerVal.trim().length > 0;
+      }
+      return false;
+    }
+
+    function evaluateQuestion(q, answerVal, rubricSelfCheck = true) {
+      if (!hasAnsweredQuestion(q, answerVal)) {
+        return {
+          isCorrect: false,
+          answered: false,
+          statusText: 'Belum Dijawab',
+          rubricMet: false
+        };
+      }
+
+      if (q.type === 'PG' || q.type === 'BS') {
+        const isCorrect = String(answerVal) === String(q.correctAnswer);
+        return {
+          isCorrect,
+          answered: true,
+          statusText: isCorrect ? 'Jawaban Benar' : 'Jawaban Kurang Tepat / Salah',
+          rubricMet: isCorrect
+        };
+      }
+
+      if (q.type === 'PGK') {
+        const expected = Array.isArray(q.correctAnswer) ? [...q.correctAnswer].sort() : [];
+        const actual = Array.isArray(answerVal) ? [...answerVal].sort() : [];
+        const isCorrect =
+          expected.length === actual.length &&
+          expected.every((val, idx) => val === actual[idx]);
+        return {
+          isCorrect,
+          answered: true,
+          statusText: isCorrect
+            ? 'Jawaban Benar (2 Pilihan Tepat)'
+            : 'Jawaban Belum Tepat (Pilih tepat 2 opsi sesuai kunci)',
+          rubricMet: isCorrect
+        };
+      }
+
+      if (q.type === 'ISIAN') {
+        const normalized = String(answerVal).toLowerCase().trim();
+        const keywords = Array.isArray(q.acceptedKeywords) && q.acceptedKeywords.length > 0
+          ? q.acceptedKeywords.map((k) => String(k).toLowerCase().trim())
+          : [String(q.correctAnswer || '').toLowerCase().trim()];
+
+        const isCorrect = keywords.some((kw) => kw && (normalized === kw || normalized.includes(kw)));
+        return {
+          isCorrect,
+          answered: true,
+          statusText: isCorrect ? 'Jawaban Benar' : 'Jawaban Kurang Sesuai Kunci',
+          rubricMet: isCorrect
+        };
+      }
+
+      if (q.type === 'JODOH') {
+        const expectedMap = q.correctAnswer || {};
+        const items = q.matchItems || [];
+        const isCorrect =
+          items.length > 0 &&
+          items.every((it) => String(answerVal[it.id] || '') === String(expectedMap[it.id] || ''));
+        return {
+          isCorrect,
+          answered: true,
+          statusText: isCorrect ? 'Pasangan Tepat (Benar)' : 'Pasangan Belum Tepat',
+          rubricMet: isCorrect
+        };
+      }
+
+      if (q.type === 'URAIAN') {
+        const isCorrect = Boolean(rubricSelfCheck);
+        return {
+          isCorrect,
+          answered: true,
+          statusText: isCorrect
+            ? 'Dinilai Benar (Memenuhi Poin Pembahasan)'
+            : 'Perlu Penyempurnaan (Belum Memenuhi Poin Kunci)',
+          rubricMet: isCorrect
+        };
+      }
+
+      return { isCorrect: false, answered: true, statusText: 'Tercatat', rubricMet: false };
+    }
+
+    function startNewExamSession(customMinutes = null) {
+      const bank = state.questions;
+      if (!bank || bank.length === 0) {
+        showToast('Tidak ada soal tersedia. Tambahkan soal di panel Admin.', 'danger');
+        return;
+      }
+
+      const minutes = Number(customMinutes) > 0 ? Number(customMinutes) : Number(state.config.durationMinutes) || 90;
+      const totalSec = minutes * 60;
+
+      // Shuffle questions and shuffle choices for PG / PGK / JODOH
+      const shuffledQuestions = shuffleArray(bank).map((q) => {
+        const clone = structuredClone(q);
+        if ((clone.type === 'PG' || clone.type === 'PGK' || clone.type === 'JODOH') && Array.isArray(clone.options)) {
+          clone.shuffledOptions = shuffleArray(clone.options);
+        }
+        return clone;
+      });
+
+      state.exam = {
+        active: true,
+        sessionQuestions: shuffledQuestions,
+        currentIndex: 0,
+        answers: {},
+        submitted: {},
+        evaluations: {},
+        remainingSeconds: totalSec,
+        totalSeconds: totalSec,
+        warningShown: false,
+        timerInterval: null,
+        startedAt: new Date().toISOString()
+      };
+
+      state.currentView = 'exam';
+      updateNavActiveStyles();
+      renderApp();
+      startExamTimer();
+      showToast(`Ujian dimulai (${minutes} menit). Urutan soal & opsi telah diacak.`, 'success');
+    }
+
+    function submitCurrentQuestion() {
+      const q = state.exam.sessionQuestions[state.exam.currentIndex];
+      if (!q) return;
+
+      const ans = state.exam.answers[q.id];
+      if (!hasAnsweredQuestion(q, ans)) {
+        showToast('Silakan pilih atau isi jawaban terlebih dahulu sebelum menekan "Jawab".', 'warning');
+        return;
+      }
+
+      if (q.type === 'PGK') {
+        const required = q.selectCount || 2;
+        if (!Array.isArray(ans) || ans.length !== required) {
+          showToast(`Soal Pilihan Ganda Kompleks ini mewajibkan memilih tepat ${required} jawaban.`, 'warning');
+          return;
+        }
+      }
+
+      const rubricCheckbox = document.getElementById(`rubricMet_${q.id}`);
+      const rubricMet = rubricCheckbox ? rubricCheckbox.checked : true;
+
+      const evalResult = evaluateQuestion(q, ans, rubricMet);
+      state.exam.submitted[q.id] = true;
+      state.exam.evaluations[q.id] = evalResult;
+
+      renderApp();
+      showToast(evalResult.statusText, evalResult.isCorrect ? 'success' : 'warning');
+    }
+
+    async function confirmFinishExam() {
+      const total = state.exam.sessionQuestions.length;
+      const answeredCount = state.exam.sessionQuestions.filter((q) => hasAnsweredQuestion(q, state.exam.answers[q.id])).length;
+      const unansweredCount = total - answeredCount;
+
+      const msg =
+        unansweredCount > 0
+          ? `Masih ada ${unansweredCount} dari ${total} soal yang belum dijawab. Apakah Anda yakin ingin menyelesaikan ujian dan melihat hasil nilai?`
+          : `Seluruh ${total} soal telah diisi. Apakah Anda yakin ingin mengakhiri ujian dan melihat hasil nilai?`;
+
+      const ok = await openConfirmModal({
+        title: 'Selesaikan Ujian?',
+        message: msg,
+        confirmText: 'Selesai & Lihat Hasil',
+        cancelText: 'Kembali Mengerjakan',
+        danger: false
+      });
+
+      if (ok) {
+        finalizeExam(false);
+      }
+    }
+
+    function finalizeExam(autoByTimeout = false) {
+      stopExamTimer();
+      const sessionQs = state.exam.sessionQuestions;
+      const totalQuestions = sessionQs.length;
+
+      let correctCount = 0;
+      let wrongCount = 0;
+      let unansweredCount = 0;
+
+      const detailItems = sessionQs.map((q, idx) => {
+        const ans = state.exam.answers[q.id];
+        const isAnswered = hasAnsweredQuestion(q, ans);
+
+        let ev = state.exam.evaluations[q.id];
+        if (!ev) {
+          const rubricCheckbox = document.getElementById(`rubricMet_${q.id}`);
+          const rubricMet = rubricCheckbox ? rubricCheckbox.checked : false;
+          ev = evaluateQuestion(q, ans, rubricMet);
+        }
+
+        if (!isAnswered) {
+          unansweredCount += 1;
+        } else if (ev.isCorrect) {
+          correctCount += 1;
+        } else {
+          wrongCount += 1;
+        }
+
+        return {
+          order: idx + 1,
+          question: q,
+          userAnswer: ans,
+          isAnswered,
+          isCorrect: isAnswered && ev.isCorrect,
+          statusText: !isAnswered ? 'Belum Dijawab' : ev.statusText
+        };
+      });
+
+      // Rumus resmi: Nilai = (Jumlah jawaban benar / Total soal) × 100
+      const rawScore = totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
+      const finalScore = Number(rawScore.toFixed(2));
+      const successRate = totalQuestions > 0 ? Number(((correctCount / totalQuestions) * 100).toFixed(1)) : 0;
+      const timeUsedSeconds = Math.max(1, state.exam.totalSeconds - state.exam.remainingSeconds);
+      const passed = finalScore >= (Number(state.config.passingGrade) || 75);
+
+      const attemptRecord = {
+        id: 'att_' + Date.now(),
+        date: new Date().toISOString(),
+        examTitle: state.config.title,
+        score: finalScore,
+        correctCount,
+        wrongCount,
+        unansweredCount,
+        totalQuestions,
+        successRate,
+        timeUsedSeconds,
+        passed,
+        passingGrade: Number(state.config.passingGrade) || 75,
+        autoByTimeout
+      };
+
+      state.history.unshift(attemptRecord);
+      saveJSON(STORAGE_KEYS.HISTORY, state.history);
+
+      state.latestResult = {
+        ...attemptRecord,
+        details: detailItems
+      };
+
+      state.exam.active = false;
+      updateHeaderTimerBadge();
+
+      state.currentView = 'results';
+      updateNavActiveStyles();
+      renderApp();
+    }
+
+    function getStatsFromHistory() {
+      if (!state.history || state.history.length === 0) {
+        return { count: 0, best: 0, average: 0 };
+      }
+      const scores = state.history.map((h) => Number(h.score) || 0);
+      const best = Math.max(...scores);
+      const sum = scores.reduce((acc, v) => acc + v, 0);
+      const average = Number((sum / scores.length).toFixed(2));
+      return {
+        count: scores.length,
+        best: Number(best.toFixed(2)),
+        average
+      };
+    }
+
+    // =========================================================================
+    // 7. RENDERERS FOR EACH VIEW
+    // =========================================================================
+    function renderApp() {
+      const container = document.getElementById('appContainer');
+      if (!container) return;
+
+      if (state.currentView === 'home') {
+        container.innerHTML = renderHomeView();
+        bindHomeEvents();
+      } else if (state.currentView === 'exam') {
+        container.innerHTML = renderExamView();
+        bindExamEvents();
+        updateTimerDisplays();
+      } else if (state.currentView === 'results') {
+        container.innerHTML = renderResultsView();
+        bindResultsEvents();
+        renderResultsChart();
+      } else if (state.currentView === 'history') {
+        container.innerHTML = renderHistoryView();
+        bindHistoryEvents();
+        renderHistoryChart();
+      } else if (state.currentView === 'admin') {
+        container.innerHTML = renderAdminView();
+        bindAdminEvents();
+      }
+
+      lucide.createIcons();
+    }
+
+    // --- 7A. HOME / DASHBOARD VIEW ---
+    function renderHomeView() {
+      const cfg = state.config;
+      const totalQ = state.questions.length;
+      const stats = getStatsFromHistory();
+
+      // Count question types
+      const typeCounts = state.questions.reduce((acc, q) => {
+        acc[q.type] = (acc[q.type] || 0) + 1;
+        return acc;
+      }, {});
+
+      return `
+        <div class="space-y-6 animate-fade-in">
+          <!-- Hero Banner -->
+          <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-700 via-blue-600 to-violet-700 text-white p-6 sm:p-10 shadow-xl shadow-blue-900/10">
+            <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+            <div class="absolute -left-10 -bottom-20 w-72 h-72 rounded-full bg-violet-400/20 blur-2xl pointer-events-none"></div>
+
+            <div class="relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div class="lg:col-span-8 space-y-4">
+                <div class="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur text-xs font-semibold tracking-wide">
+                  <i data-lucide="school" class="w-3.5 h-3.5"></i>
+                  <span>${cfg.school}</span>
+                  <span>•</span>
+                  <span>${cfg.semester}</span>
+                  <span>•</span>
+                  <span>${cfg.academicYear}</span>
+                </div>
+
+                <h1 class="font-display font-bold text-2xl sm:text-4xl leading-tight">
+                  ${cfg.title}
+                </h1>
+
+                <p class="text-blue-100 text-sm sm:text-base leading-relaxed max-w-3xl">
+                  ${cfg.description}
+                </p>
+
+                <!-- Quick Config & Start CTA -->
+                <div class="pt-2 flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div class="flex items-center gap-2 bg-white/15 backdrop-blur px-3.5 py-2.5 rounded-2xl border border-white/20">
+                    <i data-lucide="clock" class="w-4 h-4 text-blue-100"></i>
+                    <label for="homeDurationSelect" class="text-xs font-medium text-blue-100">Durasi:</label>
+                    <select id="homeDurationSelect" class="bg-transparent text-white font-semibold text-sm focus:outline-none cursor-pointer">
+                      <option value="30" class="text-slate-900" ${cfg.durationMinutes === 30 ? 'selected' : ''}>30 Menit</option>
+                      <option value="60" class="text-slate-900" ${cfg.durationMinutes === 60 ? 'selected' : ''}>60 Menit</option>
+                      <option value="90" class="text-slate-900" ${cfg.durationMinutes === 90 ? 'selected' : ''}>90 Menit (Standar SAS)</option>
+                      <option value="120" class="text-slate-900" ${cfg.durationMinutes === 120 ? 'selected' : ''}>120 Menit</option>
+                      ${![30, 60, 90, 120].includes(Number(cfg.durationMinutes)) ? `<option value="${cfg.durationMinutes}" class="text-slate-900" selected>${cfg.durationMinutes} Menit (Custom)</option>` : ''}
+                    </select>
+                  </div>
+
+                  <button id="startExamBtn" class="px-6 py-3 rounded-2xl bg-white text-blue-700 hover:bg-blue-50 font-display font-bold text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2.5 cursor-pointer" type="button">
+                    <i data-lucide="play-circle" class="w-5 h-5"></i>
+                    <span>Mulai Ujian</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Performance Summary Card -->
+              <div class="lg:col-span-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold uppercase tracking-wider text-blue-100">Statistik Peserta</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-violet-400/30 text-white">
+                    KKM: ${cfg.passingGrade}
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="bg-white/10 rounded-xl p-3.5">
+                    <div class="text-xs text-blue-100">Nilai Terbaik</div>
+                    <div class="font-display font-bold text-2xl mt-0.5">${stats.count > 0 ? stats.best : '—'}</div>
+                  </div>
+                  <div class="bg-white/10 rounded-xl p-3.5">
+                    <div class="text-xs text-blue-100">Rata-Rata Nilai</div>
+                    <div class="font-display font-bold text-2xl mt-0.5">${stats.count > 0 ? stats.average : '—'}</div>
+                  </div>
+                </div>
+
+                <div class="pt-1 flex items-center justify-between text-xs text-blue-100 border-t border-white/15">
+                  <span>Total Percobaan: <strong class="text-white">${stats.count}x</strong></span>
+                  <button id="homeToHistoryBtn" class="underline hover:text-white font-medium cursor-pointer" type="button">
+                    Lihat Riwayat →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Exam Overview Cards -->
+          <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Jumlah Soal</span>
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <i data-lucide="list-checks" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="font-display font-bold text-2xl text-slate-900 mt-2">${totalQ} Butir</div>
+              <p class="text-xs text-slate-500 mt-1">6 jenis (5 per bentuk)</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Durasi Default</span>
+                <div class="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center">
+                  <i data-lucide="hourglass" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="font-display font-bold text-2xl text-slate-900 mt-2">${cfg.durationMinutes} Menit</div>
+              <p class="text-xs text-slate-500 mt-1">Auto-submit saat waktu habis</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Batas Lulus</span>
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <i data-lucide="award" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="font-display font-bold text-2xl text-slate-900 mt-2">${cfg.passingGrade} / 100</div>
+              <p class="text-xs text-slate-500 mt-1">Rumus: (Benar / Total) × 100</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Pembahasan</span>
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <i data-lucide="book-open-check" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="font-display font-bold text-2xl text-slate-900 mt-2">Instan</div>
+              <p class="text-xs text-slate-500 mt-1">Tampil setelah menekan Jawab</p>
+            </div>
+          </section>
+
+          <!-- Question Format Breakdown & Pre-Exam Instructions -->
+          <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Pre-exam Instructions -->
+            <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center">
+                  <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h2 class="font-display font-bold text-lg text-slate-900">Petunjuk Pengerjaan Ujian</h2>
+                  <p class="text-xs text-slate-500">Harap baca ketentuan berikut sebelum memulai sesi ujian</p>
+                </div>
+              </div>
+
+              <ol class="space-y-3">
+                ${cfg.instructions
+                  .map(
+                    (inst, idx) => `
+                  <li class="flex items-start gap-3 text-sm text-slate-700 bg-slate-50/80 p-3.5 rounded-xl border border-slate-100">
+                    <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                      ${idx + 1}
+                    </span>
+                    <span class="leading-relaxed">${inst}</span>
+                  </li>
+                `
+                  )
+                  .join('')}
+              </ol>
+            </div>
+
+            <!-- Question Types & Categories -->
+            <div class="lg:col-span-5 space-y-6">
+              <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+                <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2">
+                  <i data-lucide="layers" class="w-5 h-5 text-violet-600"></i>
+                  <span>Struktur Bentuk Soal</span>
+                </h2>
+                <div class="space-y-2.5 text-sm">
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-blue-50/70 border border-blue-100">
+                    <span class="font-medium text-slate-800">Pilihan Ganda (PG)</span>
+                    <span class="font-bold text-blue-700">${typeCounts.PG || 0} Soal</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-violet-50/70 border border-violet-100">
+                    <span class="font-medium text-slate-800">Pilihan Ganda Kompleks (Pilih 2)</span>
+                    <span class="font-bold text-violet-700">${typeCounts.PGK || 0} Soal</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <span class="font-medium text-slate-800">Benar–Salah</span>
+                    <span class="font-bold text-slate-700">${typeCounts.BS || 0} Soal</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <span class="font-medium text-slate-800">Menjodohkan (A–H)</span>
+                    <span class="font-bold text-slate-700">${typeCounts.JODOH || 0} Soal</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <span class="font-medium text-slate-800">Isian Singkat</span>
+                    <span class="font-bold text-slate-700">${typeCounts.ISIAN || 0} Soal</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <span class="font-medium text-slate-800">Uraian Panjang</span>
+                    <span class="font-bold text-slate-700">${typeCounts.URAIAN || 0} Soal</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-3">
+                <h3 class="font-display font-bold text-base text-slate-900">Topik / Kategori Materi Sejarah</h3>
+                <div class="flex flex-wrap gap-2">
+                  ${cfg.categories
+                    .map(
+                      (cat) => `
+                    <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/70">
+                      ${cat}
+                    </span>
+                  `
+                    )
+                    .join('')}
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function bindHomeEvents() {
+      const startBtn = document.getElementById('startExamBtn');
+      const durSelect = document.getElementById('homeDurationSelect');
+      const histBtn = document.getElementById('homeToHistoryBtn');
+
+      if (startBtn) {
+        startBtn.addEventListener('click', () => {
+          const chosenMin = durSelect ? Number(durSelect.value) : state.config.durationMinutes;
+          startNewExamSession(chosenMin);
+        });
+      }
+
+      if (histBtn) {
+        histBtn.addEventListener('click', () => navigateTo('history'));
+      }
+    }
+
+    // --- 7B. EXAM ENGINE VIEW ---
+    function renderExamView() {
+      if (!state.exam.active || state.exam.sessionQuestions.length === 0) {
+        return `
+          <div class="bg-white rounded-2xl p-8 border border-slate-200 text-center max-w-lg mx-auto space-y-4 animate-fade-in">
+            <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+              <i data-lucide="file-question" class="w-7 h-7"></i>
+            </div>
+            <h2 class="font-display font-bold text-xl text-slate-900">Belum Ada Sesi Ujian Aktif</h2>
+            <p class="text-sm text-slate-600">Silakan mulai ujian dari halaman Beranda untuk mengerjakan 30 soal SAS Sejarah / IPS (Wajib) Kelas XII.</p>
+            <button id="emptyExamStartBtn" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors cursor-pointer" type="button">
+              Mulai Ujian Sekarang
+            </button>
+          </div>
+        `;
+      }
+
+      const sessionQs = state.exam.sessionQuestions;
+      const idx = state.exam.currentIndex;
+      const q = sessionQs[idx];
+      const total = sessionQs.length;
+      const isSubmitted = Boolean(state.exam.submitted[q.id]);
+      const evaluation = state.exam.evaluations[q.id];
+      const userAns = state.exam.answers[q.id];
+
+      const answeredCount = sessionQs.filter((item) => hasAnsweredQuestion(item, state.exam.answers[item.id])).length;
+      const showFiveMinBanner = state.exam.remainingSeconds <= 300 && state.exam.remainingSeconds > 0;
+      const sourceObj = q.sourceIllustration && typeof q.sourceIllustration === 'object'
+        ? q.sourceIllustration
+        : null;
+
+      return `
+        <div class="space-y-5 animate-fade-in">
+          <!-- 5-Minute Warning Banner -->
+          <div id="fiveMinWarningBanner" class="${showFiveMinBanner ? '' : 'hidden'} bg-rose-50 border border-rose-300 text-rose-800 px-4 py-3 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
+            <div class="flex items-center gap-2.5 text-sm font-semibold">
+              <i data-lucide="alarm-clock" class="w-5 h-5 text-rose-600 shrink-0"></i>
+              <span>Perhatian: Sisa waktu ujian kurang dari 5 menit! Pastikan jawaban Anda sudah tersimpan.</span>
+            </div>
+          </div>
+
+          <!-- Exam Top Bar: Progress & Countdown Timer -->
+          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-100 text-blue-800">
+                  Soal ${idx + 1} dari ${total}
+                </span>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-violet-100 text-violet-800">
+                  ${q.typeLabel}
+                </span>
+                <span class="text-xs text-slate-500 font-medium">
+                  • ${q.topic}
+                </span>
+              </div>
+              <div class="w-full max-w-md bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-violet-600 h-full rounded-full transition-all duration-300" style="width: ${Math.round(((idx + 1) / total) * 100)}%"></div>
+              </div>
+              <p class="text-xs text-slate-500">Terjawab: <strong class="text-slate-800">${answeredCount}</strong> / ${total} soal</p>
+            </div>
+
+            <div class="flex items-center justify-between sm:justify-end gap-3">
+              <div id="examTimerBox" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-display font-bold text-base">
+                <i data-lucide="timer" class="w-5 h-5"></i>
+                <span id="examCountdownText">${formatSeconds(state.exam.remainingSeconds)}</span>
+              </div>
+
+              <button id="finishExamTopBtn" class="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer" type="button">
+                <i data-lucide="flag" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Selesai</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Exam Grid: Question Card + Question Navigator -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <!-- Left 8 Cols: Active Question Card -->
+            <div class="lg:col-span-8 bg-white rounded-2xl p-5 sm:p-7 border border-slate-200/80 shadow-xs space-y-6">
+              <div class="space-y-4">
+                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  ${q.section} • Naskah Asli No. ${q.number}
+                </div>
+
+                ${
+                  sourceObj
+                    ? `
+                  <div class="p-4 sm:p-5 rounded-2xl bg-blue-50/75 border border-blue-200/80 text-sm text-slate-800 space-y-2">
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-blue-700">
+                      ${sourceObj.badge}
+                    </div>
+                    <div class="font-display font-bold text-sm text-blue-950 flex items-center gap-2">
+                      <i data-lucide="scroll-text" class="w-4 h-4 text-blue-600 shrink-0"></i>
+                      <span>${sourceObj.title}</span>
+                    </div>
+                    <p class="text-sm leading-relaxed text-slate-700">
+                      ${sourceObj.description}
+                    </p>
+                  </div>
+                `
+                    : ''
+                }
+
+                <h2 class="font-display font-semibold text-base sm:text-lg text-slate-900 leading-relaxed">
+                  ${q.prompt}
+                </h2>
+              </div>
+
+              <!-- Question Interactive Body by Type -->
+              <div id="questionBody" class="space-y-3">
+                ${renderQuestionInputBody(q, userAns, isSubmitted, evaluation)}
+              </div>
+
+              <!-- Submit Answer ("Jawab") & Step Navigation -->
+              <div class="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <button id="prevQuestionBtn" ${idx === 0 ? 'disabled' : ''} class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none font-medium text-sm flex items-center gap-1.5 transition-colors cursor-pointer" type="button">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    <span>Sebelumnya</span>
+                  </button>
+
+                  <button id="nextQuestionBtn" ${idx === total - 1 ? 'disabled' : ''} class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none font-medium text-sm flex items-center gap-1.5 transition-colors cursor-pointer" type="button">
+                    <span>Selanjutnya</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                  </button>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                  ${
+                    !isSubmitted
+                      ? `
+                    <button id="submitAnswerBtn" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer" type="button">
+                      <i data-lucide="check" class="w-4 h-4"></i>
+                      <span>Jawab</span>
+                    </button>
+                  `
+                      : idx < total - 1
+                      ? `
+                    <button id="nextAfterSubmitBtn" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer" type="button">
+                      <span>Soal Berikutnya</span>
+                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                  `
+                      : `
+                    <button id="finishFromLastBtn" class="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer" type="button">
+                      <i data-lucide="check-circle" class="w-4 h-4"></i>
+                      <span>Selesai & Lihat Hasil</span>
+                    </button>
+                  `
+                  }
+                </div>
+              </div>
+
+              <!-- Instant Explanation Box (Only shown AFTER pressing "Jawab") -->
+              ${isSubmitted ? renderExplanationPanel(q, evaluation) : ''}
+            </div>
+
+            <!-- Right 4 Cols: Question Navigator Grid -->
+            <aside class="lg:col-span-4 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="font-display font-bold text-base text-slate-900">Navigasi Nomor Soal</h3>
+                <span class="text-xs font-semibold text-slate-500">${answeredCount}/${total} Dijawab</span>
+              </div>
+
+              <div class="grid grid-cols-6 sm:grid-cols-10 lg:grid-cols-5 gap-2">
+                ${sessionQs
+                  .map((item, qIdx) => {
+                    const isCurrent = qIdx === idx;
+                    const answered = hasAnsweredQuestion(item, state.exam.answers[item.id]);
+                    const sub = Boolean(state.exam.submitted[item.id]);
+                    const evItem = state.exam.evaluations[item.id];
+
+                    let btnClass = 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200';
+                    if (sub && evItem) {
+                      btnClass = evItem.isCorrect
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-400 font-bold'
+                        : 'bg-rose-100 text-rose-800 border-rose-400 font-bold';
+                    } else if (answered) {
+                      btnClass = 'bg-blue-100 text-blue-800 border-blue-300 font-semibold';
+                    }
+
+                    if (isCurrent) {
+                      btnClass += ' ring-2 ring-violet-600 ring-offset-1';
+                    }
+
+                    return `
+                      <button data-jump-index="${qIdx}" class="jump-q-btn h-10 rounded-xl border text-xs transition-all flex items-center justify-center cursor-pointer ${btnClass}" type="button">
+                        ${qIdx + 1}
+                      </button>
+                    `;
+                  })
+                  .join('')}
+              </div>
+
+              <!-- Legend -->
+              <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded bg-blue-100 border border-blue-300 inline-block"></span>
+                  <span>Sudah Dijawab</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded bg-slate-100 border border-slate-200 inline-block"></span>
+                  <span>Belum Dijawab</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded bg-emerald-100 border border-emerald-400 inline-block"></span>
+                  <span>Terkoreksi Benar</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded bg-rose-100 border border-rose-400 inline-block"></span>
+                  <span>Terkoreksi Kurang Tepat</span>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQuestionInputBody(q, userAns, isSubmitted, evaluation) {
+      const displayOpts = q.shuffledOptions || q.options || [];
+
+      if (q.type === 'PG') {
+        return displayOpts
+          .map((opt) => {
+            const selected = userAns === opt.key;
+            let cardStyle = 'border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 bg-white';
+            if (isSubmitted) {
+              if (opt.key === q.correctAnswer) {
+                cardStyle = 'border-emerald-500 bg-emerald-50/90 text-emerald-950';
+              } else if (selected && opt.key !== q.correctAnswer) {
+                cardStyle = 'border-rose-500 bg-rose-50/90 text-rose-950';
+              } else {
+                cardStyle = 'border-slate-200 bg-slate-50/60 opacity-75';
+              }
+            } else if (selected) {
+              cardStyle = 'border-blue-600 bg-blue-50/90 ring-1 ring-blue-600';
+            }
+
+            return `
+              <button data-pg-key="${opt.key}" ${isSubmitted ? 'disabled' : ''} class="pg-option-btn w-full text-left p-4 rounded-xl border transition-all flex items-start gap-3.5 ${cardStyle} ${isSubmitted ? '' : 'cursor-pointer'}" type="button">
+                <span class="w-7 h-7 rounded-lg font-bold text-xs flex items-center justify-center shrink-0 ${
+                  selected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'
+                }">${opt.key}</span>
+                <span class="text-sm leading-relaxed flex-1">${opt.text}</span>
+              </button>
+            `;
+          })
+          .join('');
+      }
+
+      if (q.type === 'PGK') {
+        const selectedArr = Array.isArray(userAns) ? userAns : [];
+        const reqCount = q.selectCount || 2;
+        const correctArr = Array.isArray(q.correctAnswer) ? q.correctAnswer : [];
+
+        return `
+          <div class="flex items-center justify-between text-xs font-semibold px-3.5 py-2 rounded-xl bg-violet-50 text-violet-800 border border-violet-200">
+            <span>Pilih tepat ${reqCount} jawaban</span>
+            <span>Terpilih: ${selectedArr.length} / ${reqCount}</span>
+          </div>
+          ${displayOpts
+            .map((opt) => {
+              const checked = selectedArr.includes(opt.key);
+              const isRightOpt = correctArr.includes(opt.key);
+
+              let cardStyle = 'border-slate-200 hover:border-violet-300 hover:bg-violet-50/40 bg-white';
+              if (isSubmitted) {
+                if (isRightOpt) {
+                  cardStyle = 'border-emerald-500 bg-emerald-50/90 text-emerald-950';
+                } else if (checked && !isRightOpt) {
+                  cardStyle = 'border-rose-500 bg-rose-50/90 text-rose-950';
+                } else {
+                  cardStyle = 'border-slate-200 bg-slate-50/60 opacity-75';
+                }
+              } else if (checked) {
+                cardStyle = 'border-violet-600 bg-violet-50/90 ring-1 ring-violet-600';
+              }
+
+              return `
+                <button data-pgk-key="${opt.key}" ${isSubmitted ? 'disabled' : ''} class="pgk-option-btn w-full text-left p-4 rounded-xl border transition-all flex items-start gap-3.5 ${cardStyle} ${isSubmitted ? '' : 'cursor-pointer'}" type="button">
+                  <span class="w-6 h-6 rounded-md border flex items-center justify-center shrink-0 mt-0.5 ${
+                    checked ? 'bg-violet-600 border-violet-600 text-white' : 'border-slate-300 bg-white text-transparent'
+                  }">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                  </span>
+                  <span class="font-bold text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700 mt-0.5">${opt.key}</span>
+                  <span class="text-sm leading-relaxed flex-1">${opt.text}</span>
+                </button>
+              `;
+            })
+            .join('')}
+        `;
+      }
+
+      if (q.type === 'BS') {
+        return `
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            ${['BENAR', 'SALAH']
+              .map((val) => {
+                const selected = userAns === val;
+                let style = 'border-slate-200 bg-white hover:border-blue-400 hover:bg-blue-50/50 text-slate-800';
+                if (isSubmitted) {
+                  if (q.correctAnswer === val) {
+                    style = 'border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-500';
+                  } else if (selected && q.correctAnswer !== val) {
+                    style = 'border-rose-500 bg-rose-50 text-rose-900 ring-1 ring-rose-500';
+                  } else {
+                    style = 'border-slate-200 bg-slate-50 opacity-70 text-slate-600';
+                  }
+                } else if (selected) {
+                  style = 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600';
+                }
+
+                return `
+                  <button data-bs-val="${val}" ${isSubmitted ? 'disabled' : ''} class="bs-option-btn p-4 rounded-2xl border font-display font-bold text-base transition-all flex items-center justify-center gap-2.5 ${style} ${isSubmitted ? '' : 'cursor-pointer'}" type="button">
+                    <i data-lucide="${val === 'BENAR' ? 'check-circle-2' : 'x-circle'}" class="w-5 h-5"></i>
+                    <span>${val}</span>
+                  </button>
+                `;
+              })
+              .join('')}
+          </div>
+        `;
+      }
+
+      if (q.type === 'JODOH') {
+        const currentMap = typeof userAns === 'object' && userAns !== null ? userAns : {};
+        const items = q.matchItems || [];
+        const matchChoices = q.options || MATCHING_OPTIONS_16_20;
+
+        return `
+          <div class="space-y-4">
+            ${items
+              .map((it) => {
+                const chosenKey = currentMap[it.id] || '';
+                const expectedKey = q.correctAnswer ? q.correctAnswer[it.id] : '';
+                let rowBorder = 'border-slate-200 bg-slate-50/60';
+                if (isSubmitted) {
+                  rowBorder = chosenKey === expectedKey ? 'border-emerald-400 bg-emerald-50/70' : 'border-rose-400 bg-rose-50/70';
+                }
+
+                return `
+                  <div class="p-4 rounded-xl border ${rowBorder} space-y-2.5">
+                    <div class="font-semibold text-sm text-slate-900">${it.label}</div>
+                    <label class="block text-xs font-medium text-slate-500">Pilih pasangan yang paling sesuai (A–H):</label>
+                    <select data-match-item="${it.id}" ${isSubmitted ? 'disabled' : ''} class="match-select w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 focus:outline-none">
+                      <option value="">-- Pilih Pasangan Jawaban --</option>
+                      ${matchChoices
+                        .map(
+                          (opt) => `
+                        <option value="${opt.key}" ${chosenKey === opt.key ? 'selected' : ''}>
+                          ${opt.key}. ${opt.text}
+                        </option>
+                      `
+                        )
+                        .join('')}
+                    </select>
+                  </div>
+                `;
+              })
+              .join('')}
+          </div>
+        `;
+      }
+
+      if (q.type === 'ISIAN') {
+        return `
+          <div class="space-y-2">
+            <label for="isianInput" class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Jawaban Singkat Anda
+            </label>
+            <input
+              id="isianInput"
+              type="text"
+              ${isSubmitted ? 'disabled' : ''}
+              value="${userAns ? String(userAns).replace(/"/g, '&quot;') : ''}"
+              placeholder="Ketik kata atau frasa jawaban singkat di sini..."
+              class="w-full rounded-xl border ${
+                isSubmitted
+                  ? evaluation?.isCorrect
+                    ? 'border-emerald-500 bg-emerald-50/60 text-emerald-950'
+                    : 'border-rose-500 bg-rose-50/60 text-rose-950'
+                  : 'border-slate-300 bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+              } px-4 py-3 text-sm font-medium focus:outline-none transition-all"
+            />
+          </div>
+        `;
+      }
+
+      if (q.type === 'URAIAN') {
+        const rubricMet = evaluation ? evaluation.rubricMet : true;
+        return `
+          <div class="space-y-3">
+            <label for="uraianTextarea" class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Uraian Analisis Jawaban Anda
+            </label>
+            <textarea
+              id="uraianTextarea"
+              rows="5"
+              ${isSubmitted ? 'disabled' : ''}
+              placeholder="Tuliskan analisis, konsep, tokoh/peristiwa, atau contoh secara jelas dan terstruktur..."
+              class="w-full rounded-xl border border-slate-300 bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 p-4 text-sm leading-relaxed focus:outline-none transition-all"
+            >${userAns ? String(userAns) : ''}</textarea>
+
+            <div class="p-3.5 rounded-xl bg-violet-50/80 border border-violet-200/80 flex items-start gap-3">
+              <input
+                id="rubricMet_${q.id}"
+                type="checkbox"
+                ${isSubmitted ? 'disabled' : ''}
+                ${rubricMet ? 'checked' : ''}
+                class="mt-1 w-4 h-4 rounded text-violet-600 focus:ring-violet-500 cursor-pointer"
+              />
+              <label for="rubricMet_${q.id}" class="text-xs text-violet-950 leading-relaxed cursor-pointer">
+                <span class="font-bold">Evaluasi Mandiri Rubrik Uraian:</span> Centang jika jawaban Anda mencakup inti poin pembahasan & konteks sejarah sesuai kunci jawaban (dapat disesuaikan saat menekan "Jawab").
+              </label>
+            </div>
+          </div>
+        `;
+      }
+
+      return '';
+    }
+
+    function renderExplanationPanel(q, evaluation) {
+      const isRight = Boolean(evaluation && evaluation.isCorrect);
+      const boxColor = isRight
+        ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950'
+        : 'bg-rose-50/90 border-rose-300 text-rose-950';
+
+      const badgeColor = isRight
+        ? 'bg-emerald-600 text-white'
+        : 'bg-rose-600 text-white';
+
+      let formattedKey = '';
+      if (q.type === 'PG' || q.type === 'BS') {
+        formattedKey = String(q.correctAnswer);
+      } else if (q.type === 'PGK') {
+        formattedKey = Array.isArray(q.correctAnswer) ? q.correctAnswer.join(' & ') : String(q.correctAnswer);
+      } else if (q.type === 'JODOH') {
+        const entries = Object.entries(q.correctAnswer || {});
+        formattedKey = entries.map(([k, v]) => `${k.replace('item_', 'Soal ')} → ${v}`).join(', ');
+      } else {
+        formattedKey = String(q.correctAnswer || '');
+      }
+
+      return `
+        <div class="rounded-2xl border p-5 space-y-3 animate-fade-in ${boxColor}">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${badgeColor}">
+              <i data-lucide="${isRight ? 'check-circle-2' : 'alert-circle'}" class="w-3.5 h-3.5"></i>
+              <span>${evaluation ? evaluation.statusText : 'Pembahasan'}</span>
+            </span>
+            <span class="text-xs font-bold">Kunci Jawaban: ${formattedKey}</span>
+          </div>
+
+          <div class="space-y-1">
+            <div class="text-xs font-bold uppercase tracking-wider opacity-75">Pembahasan Lengkap</div>
+            <p class="text-sm leading-relaxed">${q.explanation}</p>
+          </div>
+
+          ${
+            Array.isArray(q.rubricPoints) && q.rubricPoints.length > 0
+              ? `
+            <div class="pt-2 border-t border-black/10 space-y-1">
+              <div class="text-xs font-bold uppercase tracking-wider opacity-75">Poin Penilaian Rubrik</div>
+              <ul class="list-disc list-inside text-xs space-y-1">
+                ${q.rubricPoints.map((pt) => `<li>${pt}</li>`).join('')}
+              </ul>
+            </div>
+          `
+              : ''
+          }
+        </div>
+      `;
+    }
+
+    function bindExamEvents() {
+      const emptyStart = document.getElementById('emptyExamStartBtn');
+      if (emptyStart) {
+        emptyStart.addEventListener('click', () => startNewExamSession());
+        return;
+      }
+
+      const q = state.exam.sessionQuestions[state.exam.currentIndex];
+      if (!q) return;
+
+      // PG selection
+      document.querySelectorAll('.pg-option-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (state.exam.submitted[q.id]) return;
+          state.exam.answers[q.id] = btn.dataset.pgKey;
+          renderApp();
+        });
+      });
+
+      // PGK selection (toggle up to selectCount)
+      document.querySelectorAll('.pgk-option-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (state.exam.submitted[q.id]) return;
+          const key = btn.dataset.pgkKey;
+          const maxSelect = q.selectCount || 2;
+          let current = Array.isArray(state.exam.answers[q.id]) ? [...state.exam.answers[q.id]] : [];
+
+          if (current.includes(key)) {
+            current = current.filter((item) => item !== key);
+          } else {
+            if (current.length >= maxSelect) {
+              showToast(`Maksimal ${maxSelect} pilihan untuk soal ini. Lepaskan salah satu pilihan terlebih dahulu.`, 'warning');
+              return;
+            }
+            current.push(key);
+          }
+
+          state.exam.answers[q.id] = current;
+          renderApp();
+        });
+      });
+
+      // Benar / Salah selection
+      document.querySelectorAll('.bs-option-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (state.exam.submitted[q.id]) return;
+          state.exam.answers[q.id] = btn.dataset.bsVal;
+          renderApp();
+        });
+      });
+
+      // Menjodohkan selects
+      document.querySelectorAll('.match-select').forEach((sel) => {
+        sel.addEventListener('change', () => {
+          if (state.exam.submitted[q.id]) return;
+          const itemId = sel.dataset.matchItem;
+          const prevObj = typeof state.exam.answers[q.id] === 'object' && state.exam.answers[q.id] !== null
+            ? { ...state.exam.answers[q.id] }
+            : {};
+          prevObj[itemId] = sel.value;
+          state.exam.answers[q.id] = prevObj;
+        });
+      });
+
+      // Isian Singkat input
+      const isianEl = document.getElementById('isianInput');
+      if (isianEl) {
+        isianEl.addEventListener('input', (e) => {
+          state.exam.answers[q.id] = e.target.value;
+        });
+      }
+
+      // Uraian textarea
+      const uraianEl = document.getElementById('uraianTextarea');
+      if (uraianEl) {
+        uraianEl.addEventListener('input', (e) => {
+          state.exam.answers[q.id] = e.target.value;
+        });
+      }
+
+      // Prev / Next buttons
+      const prevBtn = document.getElementById('prevQuestionBtn');
+      const nextBtn = document.getElementById('nextQuestionBtn');
+      const nextAfterSubmitBtn = document.getElementById('nextAfterSubmitBtn');
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          if (state.exam.currentIndex > 0) {
+            state.exam.currentIndex -= 1;
+            renderApp();
+          }
+        });
+      }
+
+      const goNext = () => {
+        if (state.exam.currentIndex < state.exam.sessionQuestions.length - 1) {
+          state.exam.currentIndex += 1;
+          renderApp();
+        }
+      };
+
+      if (nextBtn) nextBtn.addEventListener('click', goNext);
+      if (nextAfterSubmitBtn) nextAfterSubmitBtn.addEventListener('click', goNext);
+
+      // Submit Answer ("Jawab")
+      const submitBtn = document.getElementById('submitAnswerBtn');
+      if (submitBtn) {
+        submitBtn.addEventListener('click', submitCurrentQuestion);
+      }
+
+      // Finish exam triggers
+      const finishTop = document.getElementById('finishExamTopBtn');
+      const finishLast = document.getElementById('finishFromLastBtn');
+      if (finishTop) finishTop.addEventListener('click', confirmFinishExam);
+      if (finishLast) finishLast.addEventListener('click', confirmFinishExam);
+
+      // Navigator jump buttons
+      document.querySelectorAll('.jump-q-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetIdx = Number(btn.dataset.jumpIndex);
+          if (!Number.isNaN(targetIdx)) {
+            state.exam.currentIndex = targetIdx;
+            renderApp();
+          }
+        });
+      });
+    }
+
+    // --- 7C. RESULTS & SCORE VIEW ---
+    function renderResultsView() {
+      const res = state.latestResult;
+      if (!res) {
+        return `
+          <div class="bg-white rounded-2xl p-8 border border-slate-200 text-center max-w-lg mx-auto space-y-4 animate-fade-in">
+            <h2 class="font-display font-bold text-xl text-slate-900">Belum Ada Hasil Ujian</h2>
+            <p class="text-sm text-slate-600">Selesaikan sesi ujian terlebih dahulu untuk melihat skor dan analisis hasil.</p>
+            <button id="goHomeFromEmptyResBtn" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm cursor-pointer" type="button">
+              Kembali ke Beranda
+            </button>
+          </div>
+        `;
+      }
+
+      const stats = getStatsFromHistory();
+
+      return `
+        <div class="space-y-6 animate-fade-in">
+          <!-- Main Score Banner -->
+          <section class="rounded-3xl bg-white border border-slate-200/80 shadow-xs p-6 sm:p-8">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div class="space-y-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${
+                  res.passed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                }">
+                  <i data-lucide="${res.passed ? 'award' : 'alert-triangle'}" class="w-4 h-4"></i>
+                  <span>${res.passed ? 'LULUS (Memenuhi Batas Kelulusan)' : 'BELUM LULUS (Di Bawah Batas Kelulusan)'}</span>
+                </div>
+                <h1 class="font-display font-bold text-2xl sm:text-3xl text-slate-900">
+                  Hasil Ujian: ${res.examTitle}
+                </h1>
+                <p class="text-sm text-slate-500">
+                  Rumus Nilai: <code class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-semibold">(Jumlah Jawaban Benar / Total Soal) × 100</code> • Batas Kelulusan: <strong>${res.passingGrade}</strong>
+                  ${res.autoByTimeout ? ' • <span class="text-rose-600 font-semibold">Diselesaikan otomatis karena waktu habis</span>' : ''}
+                </p>
+              </div>
+
+              <div class="flex items-center gap-5 bg-gradient-to-br from-blue-600 to-violet-600 text-white px-6 py-5 rounded-2xl shadow-md shrink-0">
+                <div>
+                  <div class="text-xs uppercase tracking-wider text-blue-100 font-semibold">Nilai Akhir</div>
+                  <div class="font-display font-extrabold text-4xl sm:text-5xl leading-tight">${res.score}</div>
+                </div>
+                <div class="h-12 w-px bg-white/25"></div>
+                <div class="text-xs space-y-1">
+                  <div>Keberhasilan: <strong>${res.successRate}%</strong></div>
+                  <div>Waktu: <strong>${formatDurationHuman(res.timeUsedSeconds)}</strong></div>
+                  <div>Nilai Terbaik: <strong>${stats.best}</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-6 pt-6 border-t border-slate-100 flex flex-wrap items-center gap-3">
+              <button id="retryExamBtn" class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm flex items-center gap-2 transition-all cursor-pointer" type="button">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                <span>Coba Lagi (Acak Ulang Soal)</span>
+              </button>
+
+              <button id="viewHistoryFromResBtn" class="px-5 py-3 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-800 font-semibold text-sm border border-violet-200 flex items-center gap-2 transition-all cursor-pointer" type="button">
+                <i data-lucide="history" class="w-4 h-4"></i>
+                <span>Lihat Riwayat & Grafik Perkembangan</span>
+              </button>
+
+              <button id="backHomeFromResBtn" class="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm flex items-center gap-2 transition-all cursor-pointer" type="button">
+                <i data-lucide="home" class="w-4 h-4"></i>
+                <span>Beranda</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Metric Cards -->
+          <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-emerald-700 uppercase">Jawaban Benar</div>
+              <div class="font-display font-bold text-3xl text-emerald-600 mt-1">${res.correctCount}</div>
+              <div class="text-xs text-slate-500 mt-1">dari ${res.totalQuestions} soal</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-rose-700 uppercase">Jawaban Salah</div>
+              <div class="font-display font-bold text-3xl text-rose-600 mt-1">${res.wrongCount}</div>
+              <div class="text-xs text-slate-500 mt-1">perlu evaluasi</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-slate-600 uppercase">Belum Dijawab</div>
+              <div class="font-display font-bold text-3xl text-slate-800 mt-1">${res.unansweredCount}</div>
+              <div class="text-xs text-slate-500 mt-1">tidak terisi</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-violet-700 uppercase">Rata-Rata Riwayat</div>
+              <div class="font-display font-bold text-3xl text-violet-600 mt-1">${stats.average}</div>
+              <div class="text-xs text-slate-500 mt-1">dari ${stats.count} percobaan</div>
+            </div>
+          </section>
+
+          <!-- Chart + Itemized Review -->
+          <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div class="lg:col-span-4 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <h2 class="font-display font-bold text-lg text-slate-900">Visualisasi Komposisi Soal</h2>
+              <div class="h-64 flex items-center justify-center">
+                <canvas id="resultsBreakdownChart"></canvas>
+              </div>
+            </div>
+
+            <div class="lg:col-span-8 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <h2 class="font-display font-bold text-lg text-slate-900">Rekapitulasi & Pembahasan Per Soal</h2>
+              <div class="space-y-3 max-h-[560px] overflow-y-auto pr-1">
+                ${(res.details || [])
+                  .map((item) => {
+                    const badge = !item.isAnswered
+                      ? 'bg-slate-100 text-slate-700'
+                      : item.isCorrect
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-rose-100 text-rose-800';
+
+                    return `
+                      <div class="p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 space-y-2">
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                          <span class="text-xs font-bold text-slate-700">
+                            Urutan #${item.order} (Soal Asli No. ${item.question.number}) • ${item.question.typeLabel}
+                          </span>
+                          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${badge}">
+                            ${item.statusText}
+                          </span>
+                        </div>
+                        <p class="text-sm font-medium text-slate-900">${item.question.prompt}</p>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                          <strong class="text-slate-800">Pembahasan:</strong> ${item.question.explanation}
+                        </p>
+                      </div>
+                    `;
+                  })
+                  .join('')}
+              </div>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderResultsChart() {
+      const canvas = document.getElementById('resultsBreakdownChart');
+      const res = state.latestResult;
+      if (!canvas || !res || typeof Chart === 'undefined') return;
+
+      if (breakdownChartInstance) {
+        breakdownChartInstance.destroy();
+      }
+
+      breakdownChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Jawaban Benar', 'Jawaban Salah', 'Belum Dijawab'],
+          datasets: [
+            {
+              data: [res.correctCount, res.wrongCount, res.unansweredCount],
+              backgroundColor: ['#10b981', '#f43f5e', '#94a3b8'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                font: { family: 'Inter', size: 12 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function bindResultsEvents() {
+      const goHome = document.getElementById('goHomeFromEmptyResBtn');
+      if (goHome) goHome.addEventListener('click', () => navigateTo('home'));
+
+      const retryBtn = document.getElementById('retryExamBtn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', () => startNewExamSession(state.config.durationMinutes));
+      }
+
+      const histBtn = document.getElementById('viewHistoryFromResBtn');
+      if (histBtn) {
+        histBtn.addEventListener('click', () => navigateTo('history'));
+      }
+
+      const homeBtn = document.getElementById('backHomeFromResBtn');
+      if (homeBtn) {
+        homeBtn.addEventListener('click', () => navigateTo('home'));
+      }
+    }
+
+    // --- 7D. HISTORY DASHBOARD VIEW ---
+    function renderHistoryView() {
+      const stats = getStatsFromHistory();
+      const items = state.history || [];
+
+      return `
+        <div class="space-y-6 animate-fade-in">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 class="font-display font-bold text-2xl text-slate-900">Dashboard Riwayat Ujian</h1>
+              <p class="text-sm text-slate-500">Pantau perkembangan nilai, waktu pengerjaan, dan status kelulusan tiap percobaan</p>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <button id="historyStartExamBtn" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center gap-2 cursor-pointer" type="button">
+                <i data-lucide="play" class="w-4 h-4"></i>
+                <span>Mulai Percobaan Baru</span>
+              </button>
+              ${
+                items.length > 0
+                  ? `
+                <button id="clearHistoryBtn" class="px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-sm flex items-center gap-2 cursor-pointer" type="button">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  <span>Hapus Riwayat</span>
+                </button>
+              `
+                  : ''
+              }
+            </div>
+          </div>
+
+          <!-- Top Summary Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-slate-500 uppercase">Total Percobaan</div>
+              <div class="font-display font-bold text-3xl text-slate-900 mt-1">${stats.count}x</div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-blue-600 uppercase">Nilai Tertinggi</div>
+              <div class="font-display font-bold text-3xl text-blue-700 mt-1">${stats.count > 0 ? stats.best : '—'}</div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-violet-600 uppercase">Rata-Rata Nilai</div>
+              <div class="font-display font-bold text-3xl text-violet-700 mt-1">${stats.count > 0 ? stats.average : '—'}</div>
+            </div>
+          </div>
+
+          <!-- Score Progression Chart -->
+          <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+            <h2 class="font-display font-bold text-lg text-slate-900">Grafik Perkembangan Nilai</h2>
+            ${
+              items.length > 0
+                ? `<div class="h-72"><canvas id="historyProgressionChart"></canvas></div>`
+                : `<div class="py-12 text-center text-sm text-slate-500">Belum ada data percobaan ujian untuk ditampilkan pada grafik.</div>`
+            }
+          </div>
+
+          <!-- Attempts Table -->
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="p-5 border-b border-slate-100">
+              <h2 class="font-display font-bold text-lg text-slate-900">Daftar Percobaan Ujian</h2>
+            </div>
+
+            ${
+              items.length === 0
+                ? `
+              <div class="p-10 text-center text-sm text-slate-500">
+                Belum ada riwayat ujian tersimpan. Klik <strong>Mulai Percobaan Baru</strong> untuk mengerjakan ujian.
+              </div>
+            `
+                : `
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr class="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200">
+                      <th class="py-3.5 px-4">Percobaan</th>
+                      <th class="py-3.5 px-4">Tanggal & Waktu</th>
+                      <th class="py-3.5 px-4">Benar / Total</th>
+                      <th class="py-3.5 px-4">Waktu Digunakan</th>
+                      <th class="py-3.5 px-4">Nilai</th>
+                      <th class="py-3.5 px-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    ${items
+                      .map((att, idx) => {
+                        const attemptNum = items.length - idx;
+                        const dt = new Date(att.date).toLocaleString('id-ID', {
+                          dateStyle: 'medium',
+                          timeStyle: 'short'
+                        });
+                        return `
+                          <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="py-3.5 px-4 font-bold text-slate-800">#${attemptNum}</td>
+                            <td class="py-3.5 px-4 text-slate-600">${dt}</td>
+                            <td class="py-3.5 px-4 text-slate-700">${att.correctCount} / ${att.totalQuestions} (${att.successRate}%)</td>
+                            <td class="py-3.5 px-4 text-slate-600">${formatDurationHuman(att.timeUsedSeconds)}</td>
+                            <td class="py-3.5 px-4 font-display font-bold text-base text-blue-700">${att.score}</td>
+                            <td class="py-3.5 px-4">
+                              <span class="px-2.5 py-1 rounded-full text-xs font-bold ${
+                                att.passed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                              }">
+                                ${att.passed ? 'Lulus' : 'Tidak Lulus'}
+                              </span>
+                            </td>
+                          </tr>
+                        `;
+                      })
+                      .join('')}
+                  </tbody>
+                </table>
+              </div>
+            `
+            }
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHistoryChart() {
+      const canvas = document.getElementById('historyProgressionChart');
+      if (!canvas || !state.history || state.history.length === 0 || typeof Chart === 'undefined') return;
+
+      if (historyChartInstance) {
+        historyChartInstance.destroy();
+      }
+
+      const chronological = [...state.history].reverse();
+      const labels = chronological.map((_, i) => `Percobaan #${i + 1}`);
+      const scores = chronological.map((a) => Number(a.score));
+
+      historyChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Nilai Ujian (0–100)',
+              data: scores,
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37, 99, 235, 0.12)',
+              pointBackgroundColor: '#7c3aed',
+              pointBorderColor: '#ffffff',
+              pointRadius: 5,
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              ticks: { stepSize: 20 }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { font: { family: 'Inter', size: 12 } }
+            }
+          }
+        }
+      });
+    }
+
+    function bindHistoryEvents() {
+      const startBtn = document.getElementById('historyStartExamBtn');
+      if (startBtn) startBtn.addEventListener('click', () => startNewExamSession());
+
+      const clearBtn = document.getElementById('clearHistoryBtn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', async () => {
+          const ok = await openConfirmModal({
+            title: 'Hapus Semua Riwayat Ujian?',
+            message: 'Seluruh catatan percobaan ujian dan grafik perkembangan nilai akan dihapus permanen.',
+            confirmText: 'Ya, Hapus Riwayat',
+            cancelText: 'Batal',
+            danger: true
+          });
+          if (ok) {
+            state.history = [];
+            saveJSON(STORAGE_KEYS.HISTORY, []);
+            renderApp();
+            showToast('Riwayat ujian berhasil dihapus.', 'info');
+          }
+        });
+      }
+    }
+
+    // --- 7E. ADMIN PANEL VIEW ---
+    function renderAdminView() {
+      const cfg = state.config;
+      const editingQ = state.admin.editingId
+        ? state.questions.find((item) => item.id === state.admin.editingId)
+        : null;
+
+      const filteredQs = state.questions.filter((q) => {
+        const matchesType = state.admin.filterType === 'ALL' || q.type === state.admin.filterType;
+        const query = state.admin.searchQuery.trim().toLowerCase();
+        const matchesQuery =
+          !query ||
+          q.prompt.toLowerCase().includes(query) ||
+          q.topic.toLowerCase().includes(query) ||
+          String(q.number).includes(query);
+        return matchesType && matchesQuery;
+      });
+
+      const formType = editingQ ? editingQ.type : 'PG';
+
+      return `
+        <div class="space-y-6 animate-fade-in">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 class="font-display font-bold text-2xl text-slate-900">Admin Panel – Manajemen Soal & Pengaturan</h1>
+              <p class="text-sm text-slate-500">Kelola bank soal (30 soal SAS Sejarah Kelas XII), durasi, batas kelulusan, dan kategori ujian</p>
+            </div>
+            <button id="resetDefaultSasBtn" class="px-4 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-800 border border-violet-200 font-semibold text-sm flex items-center gap-2 cursor-pointer" type="button">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              <span>Reset Default Soal SAS (30 Soal)</span>
+            </button>
+          </div>
+
+          <!-- Exam Settings & Categories Card -->
+          <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2">
+                <i data-lucide="settings" class="w-5 h-5 text-blue-600"></i>
+                <span>Pengaturan Ujian & Kelulusan</span>
+              </h2>
+
+              <form id="examSettingsForm" class="space-y-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Judul Ujian</label>
+                  <input id="cfgTitleInput" type="text" value="${cfg.title.replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none" required />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Durasi Ujian (Menit)</label>
+                    <input id="cfgDurationInput" type="number" min="1" max="300" value="${cfg.durationMinutes}" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none" required />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Batas Nilai Kelulusan (0–100)</label>
+                    <input id="cfgPassingInput" type="number" min="0" max="100" value="${cfg.passingGrade}" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none" required />
+                  </div>
+                </div>
+
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center gap-2 cursor-pointer">
+                  <i data-lucide="save" class="w-4 h-4"></i>
+                  <span>Simpan Pengaturan Ujian</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Categories Manager -->
+            <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2">
+                <i data-lucide="folder-tree" class="w-5 h-5 text-violet-600"></i>
+                <span>Kelola Kategori Ujian</span>
+              </h2>
+
+              <div class="flex gap-2">
+                <input id="newCategoryInput" type="text" placeholder="Nama kategori baru..." class="flex-1 rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-violet-600 focus:outline-none" />
+                <button id="addCategoryBtn" class="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm cursor-pointer" type="button">
+                  Tambah
+                </button>
+              </div>
+
+              <div class="flex flex-wrap gap-2 pt-1">
+                ${cfg.categories
+                  .map(
+                    (cat, cIdx) => `
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
+                    <span>${cat}</span>
+                    <button data-del-cat="${cIdx}" class="del-cat-btn text-rose-500 hover:text-rose-700 cursor-pointer" title="Hapus kategori" type="button">
+                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </span>
+                `
+                  )
+                  .join('')}
+              </div>
+            </div>
+          </section>
+
+          <!-- Add / Edit Question Form -->
+          <section id="questionEditorSection" class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-5">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2">
+                <i data-lucide="${editingQ ? 'edit-3' : 'plus-circle'}" class="w-5 h-5 text-blue-600"></i>
+                <span>${editingQ ? `Edit Soal (No. ${editingQ.number})` : 'Tambah Soal Baru'}</span>
+              </h2>
+              ${
+                editingQ
+                  ? `
+                <button id="cancelEditQuestionBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer" type="button">
+                  Batal Edit
+                </button>
+              `
+                  : ''
+              }
+            </div>
+
+            <form id="questionForm" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Bentuk Soal</label>
+                  <select id="qTypeSelect" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:border-blue-600 focus:outline-none">
+                    <option value="PG" ${formType === 'PG' ? 'selected' : ''}>Pilihan Ganda (PG)</option>
+                    <option value="PGK" ${formType === 'PGK' ? 'selected' : ''}>Pilihan Ganda Kompleks (PGK)</option>
+                    <option value="BS" ${formType === 'BS' ? 'selected' : ''}>Benar–Salah (BS)</option>
+                    <option value="JODOH" ${formType === 'JODOH' ? 'selected' : ''}>Menjodohkan (JODOH)</option>
+                    <option value="ISIAN" ${formType === 'ISIAN' ? 'selected' : ''}>Isian Singkat (ISIAN)</option>
+                    <option value="URAIAN" ${formType === 'URAIAN' ? 'selected' : ''}>Uraian Panjang (URAIAN)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori Materi</label>
+                  <select id="qCategorySelect" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:border-blue-600 focus:outline-none">
+                    ${cfg.categories
+                      .map(
+                        (cat) => `
+                      <option value="${cat}" ${(editingQ?.category || cfg.categories[0]) === cat ? 'selected' : ''}>${cat}</option>
+                    `
+                      )
+                      .join('')}
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Topik / Indikator</label>
+                  <input id="qTopicInput" type="text" value="${(editingQ?.topic || 'Sejarah Indonesia').replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none" required />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Pertanyaan / Narasi Soal</label>
+                <textarea id="qPromptInput" rows="3" class="w-full rounded-xl border border-slate-300 p-3.5 text-sm focus:border-blue-600 focus:outline-none" required>${editingQ ? editingQ.prompt : ''}</textarea>
+              </div>
+
+              <!-- Dynamic Options & Answer Key Area -->
+              <div id="adminDynamicFields" class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+                ${renderAdminDynamicFields(formType, editingQ)}
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Pembahasan Lengkap</label>
+                <textarea id="qExplanationInput" rows="3" class="w-full rounded-xl border border-slate-300 p-3.5 text-sm focus:border-blue-600 focus:outline-none" required>${editingQ ? editingQ.explanation : ''}</textarea>
+              </div>
+
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center gap-2 cursor-pointer">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                <span>${editingQ ? 'Perbarui Soal' : 'Simpan Soal Baru'}</span>
+              </button>
+            </form>
+          </section>
+
+          <!-- Question Bank Table -->
+          <section class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 class="font-display font-bold text-lg text-slate-900">Bank Soal (${filteredQs.length} / ${state.questions.length} Soal)</h2>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <select id="adminFilterType" class="rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold bg-white">
+                  <option value="ALL" ${state.admin.filterType === 'ALL' ? 'selected' : ''}>Semua Bentuk</option>
+                  <option value="PG" ${state.admin.filterType === 'PG' ? 'selected' : ''}>PG</option>
+                  <option value="PGK" ${state.admin.filterType === 'PGK' ? 'selected' : ''}>PGK</option>
+                  <option value="BS" ${state.admin.filterType === 'BS' ? 'selected' : ''}>Benar–Salah</option>
+                  <option value="JODOH" ${state.admin.filterType === 'JODOH' ? 'selected' : ''}>Menjodohkan</option>
+                  <option value="ISIAN" ${state.admin.filterType === 'ISIAN' ? 'selected' : ''}>Isian Singkat</option>
+                  <option value="URAIAN" ${state.admin.filterType === 'URAIAN' ? 'selected' : ''}>Uraian</option>
+                </select>
+                <input id="adminSearchInput" type="text" value="${state.admin.searchQuery.replace(/"/g, '&quot;')}" placeholder="Cari soal atau topik..." class="rounded-xl border border-slate-300 px-3 py-2 text-xs w-48 sm:w-56" />
+              </div>
+            </div>
+
+            <div class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
+              ${filteredQs
+                .map(
+                  (q) => `
+                <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4 hover:bg-slate-50/70">
+                  <div class="space-y-1.5 flex-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-blue-100 text-blue-800">No. ${q.number}</span>
+                      <span class="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-violet-100 text-violet-800">${q.typeLabel}</span>
+                      <span class="text-xs text-slate-500">${q.topic}</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-900 leading-relaxed">${q.prompt}</p>
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button data-edit-id="${q.id}" class="edit-q-btn px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold flex items-center gap-1 cursor-pointer" type="button">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                      <span>Edit</span>
+                    </button>
+                    <button data-del-id="${q.id}" class="del-q-btn px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-1 cursor-pointer" type="button">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                      <span>Hapus</span>
+                    </button>
+                  </div>
+                </div>
+              `
+                )
+                .join('')}
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderAdminDynamicFields(type, editingQ) {
+      if (type === 'PG' || type === 'PGK') {
+        const opts = editingQ?.options || [
+          { key: 'A', text: '' },
+          { key: 'B', text: '' },
+          { key: 'C', text: '' },
+          { key: 'D', text: '' }
+        ];
+        const getOptText = (k) => opts.find((o) => o.key === k)?.text || '';
+
+        if (type === 'PG') {
+          const corr = editingQ?.correctAnswer || 'A';
+          return `
+            <div class="text-xs font-bold uppercase text-slate-600">Pilihan Jawaban (A–D) & Kunci Jawaban</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              ${['A', 'B', 'C', 'D']
+                .map(
+                  (k) => `
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Opsi ${k}</label>
+                  <input id="opt_${k}" type="text" value="${getOptText(k).replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" required />
+                </div>
+              `
+                )
+                .join('')}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Jawaban Benar</label>
+              <select id="pgCorrectSelect" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold">
+                ${['A', 'B', 'C', 'D'].map((k) => `<option value="${k}" ${corr === k ? 'selected' : ''}>Pilihan ${k}</option>`).join('')}
+              </select>
+            </div>
+          `;
+        }
+
+        const corrArr = Array.isArray(editingQ?.correctAnswer) ? editingQ.correctAnswer : ['A', 'B'];
+        return `
+          <div class="text-xs font-bold uppercase text-slate-600">Pilihan Ganda Kompleks (Pilih 2 Jawaban Benar)</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            ${['A', 'B', 'C', 'D']
+              .map(
+                (k) => `
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Opsi ${k}</label>
+                <input id="opt_${k}" type="text" value="${getOptText(k).replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" required />
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+          <div class="flex flex-wrap items-center gap-4 pt-1">
+            <span class="text-xs font-semibold text-slate-700">Kunci Jawaban (Pilih 2):</span>
+            ${['A', 'B', 'C', 'D']
+              .map(
+                (k) => `
+              <label class="inline-flex items-center gap-1.5 text-sm font-medium cursor-pointer">
+                <input type="checkbox" class="pgk-correct-chk rounded text-violet-600" value="${k}" ${corrArr.includes(k) ? 'checked' : ''} />
+                <span>${k}</span>
+              </label>
+            `
+              )
+              .join('')}
+          </div>
+        `;
+      }
+
+      if (type === 'BS') {
+        const corr = editingQ?.correctAnswer || 'BENAR';
+        return `
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Kunci Jawaban Benar / Salah</label>
+            <select id="bsCorrectSelect" class="rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold">
+              <option value="BENAR" ${corr === 'BENAR' ? 'selected' : ''}>BENAR</option>
+              <option value="SALAH" ${corr === 'SALAH' ? 'selected' : ''}>SALAH</option>
+            </select>
+          </div>
+        `;
+      }
+
+      if (type === 'JODOH') {
+        const firstKey = editingQ?.correctAnswer ? Object.values(editingQ.correctAnswer)[0] : 'A';
+        return `
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Kunci Pasangan Jawaban (A–H)</label>
+            <select id="jodohCorrectSelect" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium">
+              ${MATCHING_OPTIONS_16_20
+                .map(
+                  (opt) => `
+                <option value="${opt.key}" ${firstKey === opt.key ? 'selected' : ''}>
+                  ${opt.key}. ${opt.text}
+                </option>
+              `
+                )
+                .join('')}
+            </select>
+          </div>
+        `;
+      }
+
+      if (type === 'ISIAN') {
+        const kwStr = Array.isArray(editingQ?.acceptedKeywords)
+          ? editingQ.acceptedKeywords.join(', ')
+          : '';
+        return `
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Kunci Jawaban Utama</label>
+              <input id="isianKeyInput" type="text" value="${String(editingQ?.correctAnswer || '').replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" required />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Kata Kunci Diterima (Pisahkan dengan koma)</label>
+              <input id="isianKeywordsInput" type="text" value="${kwStr.replace(/"/g, '&quot;')}" placeholder="contoh: gunting syafruddin, syafruddin" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" />
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Ringkasan Kunci / Rubrik Jawaban Acuan</label>
+          <textarea id="uraianKeyInput" rows="2" class="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm" required>${editingQ?.correctAnswer || ''}</textarea>
+        </div>
+      `;
+    }
+
+    function bindAdminEvents() {
+      // Reset to default 30 SAS Sejarah questions
+      const resetBtn = document.getElementById('resetDefaultSasBtn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', async () => {
+          const ok = await openConfirmModal({
+            title: 'Reset Bank Soal ke Default SAS Sejarah?',
+            message: 'Seluruh perubahan soal akan dikembalikan ke 30 soal asli SAS Sejarah / IPS (Wajib) Kelas XII Gasal.',
+            confirmText: 'Ya, Reset Soal',
+            cancelText: 'Batal',
+            danger: false
+          });
+          if (ok) {
+            state.questions = structuredClone(DEFAULT_QUESTIONS);
+            state.config = structuredClone(DEFAULT_EXAM_CONFIG);
+            state.admin.editingId = null;
+            saveJSON(STORAGE_KEYS.QUESTIONS, state.questions);
+            saveJSON(STORAGE_KEYS.CONFIG, state.config);
+            renderApp();
+            showToast('Bank soal berhasil direset ke 30 soal SAS Sejarah Kelas XII.', 'success');
+          }
+        });
+      }
+
+      // Settings form
+      const cfgForm = document.getElementById('examSettingsForm');
+      if (cfgForm) {
+        cfgForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const titleVal = document.getElementById('cfgTitleInput').value.trim();
+          const durVal = Number(document.getElementById('cfgDurationInput').value);
+          const passVal = Number(document.getElementById('cfgPassingInput').value);
+
+          if (!titleVal || durVal < 1 || passVal < 0 || passVal > 100) {
+            showToast('Periksa kembali judul, durasi (menit), dan batas kelulusan (0–100).', 'warning');
+            return;
+          }
+
+          state.config.title = titleVal;
+          state.config.durationMinutes = durVal;
+          state.config.passingGrade = passVal;
+          saveJSON(STORAGE_KEYS.CONFIG, state.config);
+          showToast('Pengaturan ujian berhasil disimpan.', 'success');
+        });
+      }
+
+      // Add / Delete Category
+      const addCatBtn = document.getElementById('addCategoryBtn');
+      const newCatInput = document.getElementById('newCategoryInput');
+      if (addCatBtn && newCatInput) {
+        addCatBtn.addEventListener('click', () => {
+          const name = newCatInput.value.trim();
+          if (!name) {
+            showToast('Masukkan nama kategori terlebih dahulu.', 'warning');
+            return;
+          }
+          if (!state.config.categories.includes(name)) {
+            state.config.categories.push(name);
+            saveJSON(STORAGE_KEYS.CONFIG, state.config);
+            renderApp();
+            showToast(`Kategori "${name}" ditambahkan.`, 'success');
+          }
+        });
+      }
+
+      document.querySelectorAll('.del-cat-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const cIdx = Number(btn.dataset.delCat);
+          if (state.config.categories.length <= 1) {
+            showToast('Minimal harus ada 1 kategori ujian.', 'warning');
+            return;
+          }
+          state.config.categories.splice(cIdx, 1);
+          saveJSON(STORAGE_KEYS.CONFIG, state.config);
+          renderApp();
+          showToast('Kategori dihapus.', 'info');
+        });
+      });
+
+      // Dynamic form type switch
+      const qTypeSelect = document.getElementById('qTypeSelect');
+      if (qTypeSelect) {
+        qTypeSelect.addEventListener('change', (e) => {
+          const dynBox = document.getElementById('adminDynamicFields');
+          const editingQ = state.admin.editingId
+            ? state.questions.find((item) => item.id === state.admin.editingId)
+            : null;
+          if (dynBox) {
+            dynBox.innerHTML = renderAdminDynamicFields(e.target.value, editingQ);
+            lucide.createIcons({ nodes: [dynBox] });
+          }
+        });
+      }
+
+      // Cancel edit
+      const cancelEditBtn = document.getElementById('cancelEditQuestionBtn');
+      if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', () => {
+          state.admin.editingId = null;
+          renderApp();
+        });
+      }
+
+      // Save / Update Question
+      const qForm = document.getElementById('questionForm');
+      if (qForm) {
+        qForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const type = document.getElementById('qTypeSelect').value;
+          const category = document.getElementById('qCategorySelect').value;
+          const topic = document.getElementById('qTopicInput').value.trim();
+          const prompt = document.getElementById('qPromptInput').value.trim();
+          const explanation = document.getElementById('qExplanationInput').value.trim();
+
+          const typeLabelMap = {
+            PG: 'Pilihan Ganda',
+            PGK: 'Pilihan Ganda Kompleks (Pilih 2)',
+            BS: 'Benar–Salah',
+            JODOH: 'Menjodohkan (A–H)',
+            ISIAN: 'Isian Singkat',
+            URAIAN: 'Uraian Panjang'
+          };
+
+          const baseData = {
+            type,
+            typeLabel: typeLabelMap[type] || type,
+            category,
+            topic,
+            prompt,
+            explanation
+          };
+
+          if (type === 'PG') {
+            baseData.options = ['A', 'B', 'C', 'D'].map((k) => ({
+              key: k,
+              text: document.getElementById(`opt_${k}`).value.trim()
+            }));
+            baseData.correctAnswer = document.getElementById('pgCorrectSelect').value;
+          } else if (type === 'PGK') {
+            baseData.options = ['A', 'B', 'C', 'D'].map((k) => ({
+              key: k,
+              text: document.getElementById(`opt_${k}`).value.trim()
+            }));
+            const checkedKeys = Array.from(document.querySelectorAll('.pgk-correct-chk:checked')).map((c) => c.value);
+            if (checkedKeys.length !== 2) {
+              showToast('Pilih tepat 2 kunci jawaban untuk soal Pilihan Ganda Kompleks.', 'warning');
+              return;
+            }
+            baseData.selectCount = 2;
+            baseData.correctAnswer = checkedKeys;
+          } else if (type === 'BS') {
+            baseData.options = [
+              { key: 'BENAR', text: 'BENAR' },
+              { key: 'SALAH', text: 'SALAH' }
+            ];
+            baseData.correctAnswer = document.getElementById('bsCorrectSelect').value;
+          } else if (type === 'JODOH') {
+            baseData.options = MATCHING_OPTIONS_16_20;
+            const nextNum = state.admin.editingId
+              ? state.questions.find((item) => item.id === state.admin.editingId)?.number || state.questions.length + 1
+              : state.questions.length + 1;
+            const itemKey = `item_${nextNum}`;
+            baseData.matchItems = [
+              { id: itemKey, label: `${nextNum}. [${topic}] ${prompt}` }
+            ];
+            baseData.correctAnswer = { [itemKey]: document.getElementById('jodohCorrectSelect').value };
+          } else if (type === 'ISIAN') {
+            const mainKey = document.getElementById('isianKeyInput').value.trim();
+            const rawKw = document.getElementById('isianKeywordsInput').value.trim();
+            const kwList = rawKw
+              ? rawKw.split(',').map((s) => s.trim()).filter(Boolean)
+              : [mainKey.toLowerCase()];
+            baseData.correctAnswer = mainKey;
+            baseData.acceptedKeywords = kwList;
+          } else if (type === 'URAIAN') {
+            baseData.correctAnswer = document.getElementById('uraianKeyInput').value.trim();
+          }
+
+          if (state.admin.editingId) {
+            state.questions = state.questions.map((item) =>
+              item.id === state.admin.editingId ? { ...item, ...baseData } : item
+            );
+            state.admin.editingId = null;
+            showToast('Soal berhasil diperbarui.', 'success');
+          } else {
+            const nextNum = state.questions.length + 1;
+            const newQ = {
+              id: Date.now(),
+              number: nextNum,
+              section: `Bagian Tambahan • ${baseData.typeLabel}`,
+              ...baseData
+            };
+            state.questions.push(newQ);
+            showToast(`Soal baru (#${nextNum}) berhasil ditambahkan ke bank soal.`, 'success');
+          }
+
+          saveJSON(STORAGE_KEYS.QUESTIONS, state.questions);
+          renderApp();
+        });
+      }
+
+      // Edit & Delete question actions
+      document.querySelectorAll('.edit-q-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.admin.editingId = Number(btn.dataset.editId);
+          renderApp();
+          document.getElementById('questionEditorSection')?.scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+
+      document.querySelectorAll('.del-q-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const qId = Number(btn.dataset.delId);
+          const ok = await openConfirmModal({
+            title: 'Hapus Soal dari Bank Soal?',
+            message: 'Soal yang dihapus tidak akan muncul pada sesi ujian berikutnya (kecuali di-reset ke default).',
+            confirmText: 'Ya, Hapus Soal',
+            cancelText: 'Batal',
+            danger: true
+          });
+          if (ok) {
+            state.questions = state.questions.filter((item) => item.id !== qId);
+            if (state.admin.editingId === qId) state.admin.editingId = null;
+            saveJSON(STORAGE_KEYS.QUESTIONS, state.questions);
+            renderApp();
+            showToast('Soal berhasil dihapus.', 'info');
+          }
+        });
+      });
+
+      // Filter & Search in Admin bank
+      const filterSel = document.getElementById('adminFilterType');
+      const searchInp = document.getElementById('adminSearchInput');
+      if (filterSel) {
+        filterSel.addEventListener('change', (e) => {
+          state.admin.filterType = e.target.value;
+          renderApp();
+        });
+      }
+      if (searchInp) {
+        searchInp.addEventListener('input', (e) => {
+          state.admin.searchQuery = e.target.value;
+          renderApp();
+          const refocused = document.getElementById('adminSearchInput');
+          if (refocused) {
+            refocused.focus();
+            refocused.setSelectionRange(refocused.value.length, refocused.value.length);
+          }
+        });
+      }
+    }
+
+    // =========================================================================
+    // 8. INITIALIZATION
+    // =========================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Navigation click handlers
+      document.querySelectorAll('[data-nav]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const drawer = document.getElementById('mobileNavDrawer');
+          if (drawer) drawer.classList.add('hidden');
+          navigateTo(btn.dataset.nav);
+        });
+      });
+
+      const logoBtn = document.getElementById('brandLogoBtn');
+      if (logoBtn) {
+        logoBtn.addEventListener('click', () => navigateTo('home'));
+      }
+
+      const mobileBtn = document.getElementById('mobileMenuBtn');
+      if (mobileBtn) {
+        mobileBtn.addEventListener('click', () => {
+          const drawer = document.getElementById('mobileNavDrawer');
+          if (drawer) drawer.classList.toggle('hidden');
+        });
+      }
+
+      updateNavActiveStyles();
+      renderApp();
+    });
+  </script>
+</body>
+</html>
